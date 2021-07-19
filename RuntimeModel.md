@@ -1,7 +1,7 @@
 # Runtime Model
 
 Smalltalk is meant to be a small and simple language.
-The syntax is simple and basic opearations consist of Message Send, Return, and Assignment.
+The syntax is minimal and basic opearations consist of Message Send, Return, and Assignment.
 Smalltalk Objects hold values, receive and send messages.
 The Wikipedia.org page on Smalltalk had a good description of this.
 
@@ -27,6 +27,36 @@ Basically, all globals known to code are either local values
 (Instance Variables or Method Temporarys) or are names in the Smalltalk Dictionary.
 
 ## Registers & Stack
+
+We will use more regiters, but stack layout is patterned after the Bee DMR.
+http://esug.org/data/ESUG2014/IWST/Papers/iwst2014_Design%20and%20implementation%20of%20Bee%20Smalltalk%20Runtime.pdf 
+
+RISC-V Stack grows down and is quadword aligned.
+Stack records are between the chained FramePointers, which points to base of stack frame, and the StackPointer itself.
+
+### Registers
+FramePointer is register S0.
+StackPointer is register SP.
+Self/Receiver is register A0 [Also Result]
+Arguments in registers A1..A7 with spill to Stack
+Method in S1 [For literal access]
+Env in S2 [for closure captured variable access]
+
+### Stack Layout
+```
+    ..    
+    ^
+    ^--<OlderFP -----<
+	temp...      ^
+	Env          ^
+        Method       ^
+	Receiver     ^
+FP--->  PreviousFP>--^
+	ReturnAddress
+	...
+        arg9
+SP--->  arg8
+```
 
 ## Object Layout Format
 
@@ -60,6 +90,15 @@ Vertical Encodings are just numberings and may be used where there are many cate
 each of which is distinct from all others.
 E.g. (#triangle->4, #rectangle->4, #pentagram->5, #hexagram->6)
 
+Pointer addresses end in 2r00.  If we follow Bee DMR, SmallIntegers are 31 bits left shifted
+one and bit0 set to 1.
+
+Immediate values are just OOP addresses near zero.
+
+- UndefinedObject/Nil = 2r0000
+- True  = 2r0100
+- False = 2r1000
+- ...
 
 ## Message Invocation
 
