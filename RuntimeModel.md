@@ -35,12 +35,17 @@ RISC-V Stack grows down and is quadword aligned.
 Stack records are between the chained FramePointers, which points to base of stack frame, and the StackPointer itself.
 
 ### Registers
-FramePointer is register S0.
-StackPointer is register SP.
-Self/Receiver is register A0 [Also Result]
-Arguments in registers A1..A7 with spill to Stack
-Method in S1 [For literal access]
-Env in S2 [for closure captured variable access]
+
+- FramePointer is register S0 (x8).
+- StackPointer is register SP (x2).
+- Self/Receiver is register A0 [Also Result]
+- Arguments in registers A1..A7 with spill to Stack
+- Method in S1 [For literal access; 1sl literal is CodeVector]
+- Env in S2 [for closure captured variable access]
+- PC [Points into Method's Codevector]
+- Temp0 .. Temp6 in T0..T6 w spill to Stack
+- ReturnAddress in RA (x1)
+- Nil/UndefinedObject is ZERO (x0) [see below]
 
 ### Stack Layout
 ```
@@ -63,9 +68,9 @@ SP--->  arg8
 All the machine knows are bits, either in memory or registers.
 
 Smalltalk Objects are represented as either
-Immediate Values, those which fit in a machine register,
+_Immediate Values_, those which fit in a machine register,
 or
-Vector-Like Objects, an array, the first part of which is a Header,
+_Vector-Like Objects_, an array, the first part of which is a Header,
 which encodes clues to its size and structure) and an optional part which is
 interpreted either as Smalltalk Objects (A compact array of Slots) or
 binary data (e.g. a ByteVector).
@@ -76,17 +81,17 @@ which is basically a Method Dictionary, a Dictionary of (Symbol -> Method).
 
 Key ideas: Horizontal vs Vertical Encoding and Hashing.
 
-Dictionarys map Keys to Values.
-Each Smalltalk object responds to a method #Hash which reponds with a SmallInteger
+_Dictionarys_ map Keys to Values.
+Each Smalltalk object responds to a method ```Smalltalk #hash ``` which reponds with a SmallInteger
 which is used to shorten lookup time. [Wikipedia.org]
 
-Horizontal encoding maps categories to bits which can be tested individually,
+_Horizontal Encoding_ maps categories to bits which can be tested individually,
 e.g. (#sphere->1, #cube->2, #ball->4, #rectangel->8, #square->16).
 This is used where there are few
 categories and an object may be classified in 
 multiple categories (e.g. Sphere+Ball, Square+Rectangle)
 
-Vertical Encodings are just numberings and may be used where there are many categories,
+_Vertical Encoding_s are just numberings and may be used where there are many categories,
 each of which is distinct from all others.
 E.g. (#triangle->4, #rectangle->4, #pentagram->5, #hexagram->6)
 
@@ -101,6 +106,8 @@ Immediate values are just OOP addresses near zero.
 - ...
 
 ## Message Invocation
+
+Registers reserved for method lookup..
 
 ## PICs
 
