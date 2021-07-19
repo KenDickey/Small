@@ -82,7 +82,7 @@ which is basically a Method Dictionary, a Dictionary of (Symbol -> Method).
 Key ideas: Horizontal vs Vertical Encoding and Hashing.
 
 _Dictionarys_ map Keys to Values.
-Each Smalltalk object responds to a method ```Smalltalk #hash ``` which reponds with a SmallInteger
+Each Smalltalk object responds to a method #hash which reponds with a SmallInteger
 which is used to shorten lookup time. [Wikipedia.org]
 
 _Horizontal Encoding_ maps categories to bits which can be tested individually,
@@ -91,7 +91,7 @@ This is used where there are few
 categories and an object may be classified in 
 multiple categories (e.g. Sphere+Ball, Square+Rectangle)
 
-_Vertical Encoding_s are just numberings and may be used where there are many categories,
+_Vertical Encoding_ are just consecutive numbers and may be used where there are many categories,
 each of which is distinct from all others.
 E.g. (#triangle->4, #rectangle->4, #pentagram->5, #hexagram->6)
 
@@ -99,15 +99,20 @@ Pointer addresses end in 2r00.  If we follow Bee DMR, SmallIntegers are 31 bits 
 one and bit0 set to 1.
 
 Immediate values are just OOP addresses near zero.
+These are easy to create, so do not need dedicated registers to hold their values.
 
-- UndefinedObject/Nil = 2r0000
+- UndefinedObject/Nil = 2r0000  [So matches register ZERO = x0]
 - True  = 2r0100
 - False = 2r1000
 - ...
 
+## Object Headers
+
 ## Message Invocation
 
-Registers reserved for method lookup..
+Registers reserved for method lookup.. [Sn..]
 
 ## PICs
+
+## Contexts & Exceptions
 
