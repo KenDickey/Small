@@ -21,14 +21,14 @@ in comprhensible ways.
 
 There exists a vector/array of objects known as the Known Objects Array.
 
-One known object is the SystemDictinary named #Smalltalk.
+One known object is the SystemDictionary named #Smalltalk.
 
 Basically, all globals known to code are either local values
 (Instance Variables or Method Temporarys) or are names in the Smalltalk Dictionary.
 
 ## Registers & Stack
 
-We will use more regiters, but stack layout is patterned after the Bee DMR.
+We will use more registers, but stack layout is patterned after the Bee DMR.
 http://esug.org/data/ESUG2014/IWST/Papers/iwst2014_Design%20and%20implementation%20of%20Bee%20Smalltalk%20Runtime.pdf 
 
 RISC-V Stack grows down and is quadword aligned.
@@ -40,8 +40,8 @@ Stack records are between the chained FramePointers, which points to base of sta
 - StackPointer is register SP (x2).
 - Self/Receiver is register A0 [Also Result]
 - Arguments in registers A1..A7 with spill to Stack
-- Method in S1 [For literal access; 1sl literal is CodeVector]
-- Env in S2 [for closure captured variable access]
+- Method in S1 [For literal access; 1st literal is CodeVector]
+- Env in S2 [for closure captured variable access; may be nil]
 - PC [Points into Method's Codevector]
 - Temp0 .. Temp6 in T0..T6 w spill to Stack
 - ReturnAddress in RA (x1)
@@ -77,13 +77,13 @@ binary data (e.g. a ByteVector).
 
 Typically, there is a first Slot in a Vector-Like Object which is a pointer
 to either its Class Object or a Behavior object.  Here we use a Behavior object
-which is basically a Method Dictionary, a Dictionary of (Symbol -> Method).
+which is basically a _Method Dictionary_, a Dictionary of (Symbol -> Method).
 
 Key ideas: Horizontal vs Vertical Encoding and Hashing.
 
-_Dictionarys_ map Keys to Values.
+_Dictionarys_ map _Keys_ to _Values_.
 Each Smalltalk object responds to a method #hash which reponds with a SmallInteger
-which is used to shorten lookup time. [Wikipedia.org]
+which is used to shorten lookup time. [https://en.wikipedia.org/wiki/Hash_table]
 
 _Horizontal Encoding_ maps categories to bits which can be tested individually,
 e.g. (#sphere->1, #cube->2, #ball->4, #rectangel->8, #square->16).
@@ -98,7 +98,8 @@ E.g. (#triangle->4, #rectangle->4, #pentagram->5, #hexagram->6)
 Pointer addresses end in 2r00.  If we follow Bee DMR, SmallIntegers are 31 bits left shifted
 one and bit0 set to 1.
 
-Immediate values are just OOP addresses near zero.
+Immediate values are just OOP addresses near zero.  
+These are known by their small values.
 These are easy to create, so do not need dedicated registers to hold their values.
 
 - UndefinedObject/Nil = 2r0000  [So matches register ZERO = x0]
