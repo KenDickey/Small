@@ -46,9 +46,13 @@ Stack records are between the chained FramePointer regs, which point to base of 
 - Temp0 .. Temp6 in T0..T6 w spill to Stack
 - ReturnAddress in RA (x1)
 - Nil/UndefinedObject is ZERO (x0) [see below]
+- StackLimit in S8
+- KnownObjects base in S9
 
 ### Stack Layout
 ```
+    Stack Object Header
+    ..
     ..    
     ^
     ^--<OlderFP -----<
@@ -62,6 +66,9 @@ FP--->  PreviousFP>--^
         arg9
 SP--->  arg8
 ```
+
+Note: to interpret/convert frames into Context objects requires tracking spills and registers.
+
 
 ## Object Layout Format
 
