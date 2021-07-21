@@ -24,7 +24,7 @@ There exists a vector/array of objects known as the Known Objects Array.
 One known object is the SystemDictionary named #Smalltalk.
 
 Basically, all globals known to code are either local values
-(Instance Variables or Method Temporarys) or are names in the Smalltalk Dictionary.
+(Instance Variables or Method Temporaries) or are names in the Smalltalk Dictionary.
 
 ## Registers & Stack
 
@@ -32,7 +32,7 @@ We will use more registers, but stack layout is patterned after the Bee DMR.
 http://esug.org/data/ESUG2014/IWST/Papers/iwst2014_Design%20and%20implementation%20of%20Bee%20Smalltalk%20Runtime.pdf 
 
 RISC-V Stack grows down and is quadword aligned.
-Stack records are between the chained FramePointers, which points to base of stack frame, and the StackPointer itself.
+Stack records are between the chained FramePointer regs, which point to base of stack frame, and the StackPointer itself.
 
 ### Registers
 
@@ -83,7 +83,7 @@ Key ideas: Horizontal vs Vertical Encoding and Hashing.
 
 _Dictionarys_ map _Keys_ to _Values_.
 Each Smalltalk object responds to a method #hash which reponds with a SmallInteger
-which is used to shorten lookup time. [https://en.wikipedia.org/wiki/Hash_table]
+which is used to shorten key lookup time. [https://en.wikipedia.org/wiki/Hash_table]
 
 _Horizontal Encoding_ maps categories to bits which can be tested individually,
 e.g. (#sphere->1, #cube->2, #ball->4, #rectangel->8, #square->16).
@@ -117,11 +117,13 @@ After Bee, we separate lookup from invocation.
 
 Lookup takes an object, the receiver, and a selector and finds either
 the requisite method or substitutes a DNU.
-Decision: Debug: Reserve a temp reg for selector or recover from method?
+
+[Decision: Debug: Reserve a temp reg for selector or recover from method?]
 
 Registers reserved for method lookup.. 
-
-[A0=receiver; temp0 for Selector?; other temps for hash & dict lookup? TBD]
+- A0=Receiver
+- temp0 for Selector?
+- other temps for hash & dict lookup? TBD
 
 ## PICs
 
