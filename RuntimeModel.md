@@ -109,11 +109,29 @@ These are easy to create, so do not need dedicated registers to hold their value
 
 ## Object Headers
 
+Bee Header (simple) or Spur (refined) ?? TBD
+
 ## Message Invocation
 
-Registers reserved for method lookup.. [Sn..]
+After Bee, we separate lookup from invocation.
+
+Lookup takes an object, the receiver, and a selector and finds either
+the requisite method or substitutes a DNU.
+Decision: Debug: Reserve a temp reg for selector or recover from method?
+
+Registers reserved for method lookup.. 
+
+[A0=receiver; temp0 for Selector?; other temps for hash & dict lookup? TBD]
 
 ## PICs
 
 ## Contexts & Exceptions
+
+## Optimization Ideas
+
+Make "type tests" visible to be "lifted out" or "propagated forward".
+I.e. in a Method, if the first send does a check for an argument being a SmallInteger,
+if the test passed, then no other sends need to re-check for this object again.
+All succeeding SmallInteger tests can be elided (the tested object's "type" 
+has become resolved).
 
