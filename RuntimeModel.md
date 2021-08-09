@@ -31,6 +31,15 @@ One known object is the SystemDictionary named #Smalltalk.
 Basically, all globals known to code are either local values
 (Instance Variables or Method Temporaries) or are names in the Smalltalk Dictionary.
 
+There is a segmented table of ClassID -> Behavior, where a Behavior is a
+dictionary of (Method Selector Symbol -> Method).
+One of the selectors is #class, so each object knows its class.
+All objects have behaviors -- they are useless otherwise.
+Sending a message to an object is achieved by looking up the message
+selector in the object's behavior dictionary (or those of its
+ancestors) and invoking that method with the object and other
+arguments.  This is explained further below.
+
 ## Object Layout Format
 
 All entities in Smalltalk are known as Objects.
@@ -39,11 +48,12 @@ There is nothing else.
 
 All the machine knows are bits, either in memory or registers.
 
-The basics are well covered in David Gudeman's
+The basics of managing the bits to represent information is well covered in
+David Gudeman's paper: 
 "Representing Type Information in Dynamically Typed Languages"
 https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.39.4394&rep=rep1&type=pdf
 
-In short. Smalltalk Objects are represented as either
+In short, Smalltalk Objects are represented as either
 _Immediate Values_, those which fit in a machine register,
 or
 _Vector-Like Objects_, an array, the first part of which is a Header,
@@ -74,10 +84,16 @@ Immediate values are just OOP addresses near zero.
 These are known by their small values.
 These are easy to create, so do not need dedicated registers to hold their values.
 
-- UndefinedObject/Nil = 2r0000  [So matches register ZERO = x0]
+- UndefinedObject/Nil = 0  [So matches register ZERO = x0]
 - True  = 2r0100
 - False = 2r1000
 - ...
+
+Other immediate values (small integers, floats, characters) and object header format
+is well described in Clément Béra: "Spur’s new object format"
+https://clementbera.wordpress.com/2014/01/16/spurs-new-object-format/
+(Other refs below).
+
 
 
 ## Registers & Stack
