@@ -31,6 +31,55 @@ One known object is the SystemDictionary named #Smalltalk.
 Basically, all globals known to code are either local values
 (Instance Variables or Method Temporaries) or are names in the Smalltalk Dictionary.
 
+## Object Layout Format
+
+All entities in Smalltalk are known as Objects.
+To do anything, Messages are sent to Objects.
+There is nothing else.
+
+All the machine knows are bits, either in memory or registers.
+
+The basics are well covered in David Gudeman's
+"Representing Type Information in Dynamically Typed Languages"
+https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.39.4394&rep=rep1&type=pdf
+
+In short. Smalltalk Objects are represented as either
+_Immediate Values_, those which fit in a machine register,
+or
+_Vector-Like Objects_, an array, the first part of which is a Header,
+which encodes clues to its size and structure) and an optional part which is
+interpreted either as Smalltalk Objects (A compact array of Slots) or
+binary data (e.g. a ByteVector).
+
+We are using OpenSmalltalkVM's "Spur" header format
+(refs below; see "Spur Object Format").
+
+Key ideas: Horizontal vs Vertical Encoding and Hashing.
+
+_Dictionarys_ map _Keys_ to _Values_.
+Each Smalltalk object responds to a method #hash which reponds with a SmallInteger
+which is used to shorten key lookup time. [https://en.wikipedia.org/wiki/Hash_table]
+
+_Horizontal Encoding_ maps categories to bits which can be tested individually,
+e.g. (#sphere->1, #cube->2, #ball->4, #rectangel->8, #square->16).
+This is used where there are few
+categories and an object may be classified in 
+multiple categories (e.g. Sphere+Ball, Square+Rectangle)
+
+_Vertical Encoding_ are just consecutive numbers and may be used where there are many categories,
+each of which is distinct from all others.
+E.g. (#triangle->4, #rectangle->4, #pentagram->5, #hexagram->6)
+
+Immediate values are just OOP addresses near zero.  
+These are known by their small values.
+These are easy to create, so do not need dedicated registers to hold their values.
+
+- UndefinedObject/Nil = 2r0000  [So matches register ZERO = x0]
+- True  = 2r0100
+- False = 2r1000
+- ...
+
+
 ## Registers & Stack
 
 We will use more registers, but stack layout is patterned after the Bee DMR.
@@ -74,54 +123,6 @@ SP--->  arg8
 
 Note: to interpret/convert frames into Context objects requires tracking spills and registers.
 
-
-## Object Layout Format
-
-All the machine knows are bits, either in memory or registers.
-
-Smalltalk Objects are represented as either
-_Immediate Values_, those which fit in a machine register,
-or
-_Vector-Like Objects_, an array, the first part of which is a Header,
-which encodes clues to its size and structure) and an optional part which is
-interpreted either as Smalltalk Objects (A compact array of Slots) or
-binary data (e.g. a ByteVector).
-
-Typically, there is a first Slot in a Vector-Like Object which is a pointer
-to either its Class Object or a Behavior object.  Here we use a Behavior object
-which is basically a _Method Dictionary_, a Dictionary of (Symbol -> Method).
-
-Key ideas: Horizontal vs Vertical Encoding and Hashing.
-
-_Dictionarys_ map _Keys_ to _Values_.
-Each Smalltalk object responds to a method #hash which reponds with a SmallInteger
-which is used to shorten key lookup time. [https://en.wikipedia.org/wiki/Hash_table]
-
-_Horizontal Encoding_ maps categories to bits which can be tested individually,
-e.g. (#sphere->1, #cube->2, #ball->4, #rectangel->8, #square->16).
-This is used where there are few
-categories and an object may be classified in 
-multiple categories (e.g. Sphere+Ball, Square+Rectangle)
-
-_Vertical Encoding_ are just consecutive numbers and may be used where there are many categories,
-each of which is distinct from all others.
-E.g. (#triangle->4, #rectangle->4, #pentagram->5, #hexagram->6)
-
-Pointer addresses end in 2r00.  If we follow Bee DMR, SmallIntegers are 31 bits left shifted
-one and bit0 set to 1.
-
-Immediate values are just OOP addresses near zero.  
-These are known by their small values.
-These are easy to create, so do not need dedicated registers to hold their values.
-
-- UndefinedObject/Nil = 2r0000  [So matches register ZERO = x0]
-- True  = 2r0100
-- False = 2r1000
-- ...
-
-## Object Headers
-
-Bee Header (simple) or Spur (refined) ?? TBD
 
 ## Message Invocation
 
