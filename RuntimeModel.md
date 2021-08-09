@@ -17,6 +17,11 @@ in comprhensible ways.
 ["Design Principles Behind Smalltalk", Dan Ingalls, 1981]
 (http://www.cs.virginia.edu/~evans/cs655/readings/smalltalk.html)
 
+As all objects know how to present themselves, the "simple to use" language
+as complex underpinnings, e.g. Garbage Collection and access to the runtime
+stack frames via #thisContext.
+
+
 ## Runtime Globals
 
 There exists a vector/array of objects known as the Known Objects Array.
@@ -144,3 +149,35 @@ if the test passed, then no other sends need to re-check for this object again.
 All succeeding SmallInteger tests can be elided (the tested object's "type" 
 has become resolved).
 
+## Background Reading
+
+### thisContext, Exception handling, and Stack Management
+Allen Wirfs-Brock: "Efficient Implementation of Smalltalk Block Returns"
+http://www.wirfs-brock.com/allen/things/smalltalk-things/efficient-implementation-smalltalk-block-returns
+
+Javier Piḿas, Javier Burroni, Gerardo Richarte:
+"Design and implementation of Bee Smalltalk Runtime"
+http://esug.org/data/ESUG2014/IWST/Papers/iwst2014_Design%20and%20implementation%20of%20Bee%20Smalltalk%20Runtime.pdf
+
+Robert Hieb, R. Kent Dybvig, Carl Bruggeman:
+"Representing Control in the Presence of First-Class Continuations"
+https://legacy.cs.indiana.edu/~dyb/pubs/stack.pdf
+
+Eliot Miranda: "Under Cover Contexts and the Big Frame-Up"
+http://www.mirandabanda.org/cogblog/2009/01/14/under-cover-contexts-and-the-big-frame-up/
+
+Eliot Miranda: "Context Management in VisualWorks 5i"
+http://www.esug.org/data/Articles/misc/oopsla99-contexts.pdf
+
+### Spur Object Format
+
+Clément Béra: "Spur’s new object format"
+https://clementbera.wordpress.com/2014/01/16/spurs-new-object-format/
+
+Eliot Miranda: "A Spur gear for Cog"
+http://www.mirandabanda.org/cogblog/2013/09/05/a-spur-gear-for-cog/
+
+Eliot Miranda, Clément Béra:
+"A Partial Read Barrier for Eﬀicient Support of Live
+ Object-oriented Programming"
+https://hal.inria.fr/hal-01152610/file/partialReadBarrier.pdf
