@@ -18,7 +18,7 @@ in comprhensible ways.
 (http://www.cs.virginia.edu/~evans/cs655/readings/smalltalk.html)
 
 As all objects know how to present themselves, the "simple to use" language
-as complex underpinnings, e.g. Garbage Collection and access to the runtime
+has complex underpinnings, e.g. Garbage Collection and access to the runtime
 stack frames via #thisContext.
 
 
@@ -76,27 +76,41 @@ This is used where there are few
 categories and an object may be classified in 
 multiple categories (e.g. Sphere+Ball, Square+Rectangle)
 
-_Vertical Encoding_ are just consecutive numbers and may be used where there are many categories,
+_Vertical Encodings_ are just consecutive numbers and may be used where there are many categories,
 each of which is distinct from all others.
 E.g. (#triangle->4, #rectangle->4, #pentagram->5, #hexagram->6)
 
-Immediate values are just OOP addresses near zero.  
-These are known by their small values.
-These are easy to create, so do not need dedicated registers to hold their values.
-
-- UndefinedObject/Nil = 0  [So matches register ZERO = x0]
-- True  = 2r0100
-- False = 2r1000
-- ...
-
-Other immediate values (small integers, floats, characters) and object header format
+Most immediate values (small integers, floats, characters) and object header format
 is well described in Clément Béra: "Spur’s new object format"
 https://clementbera.wordpress.com/2014/01/16/spurs-new-object-format/
 (Other refs below).
 
+Most values are known by the tag in their lower 3 bits.
+- 2r000 -> Object Oriented Pointer, or _OOP_.
+- 2r001 -> Small Integer
+- 2r010 -> Character
+- 2r100 -> Small Floating Point Number, or _float_.
+
+Three immediate values are special, _true_, _false_, and _nil_.
+The trick here is that we don't use OOP addresses near zero.  
+So _nil_, _true_, and _false_ are known by their small values, which
+are easy to create and check in code.
+
+- UndefinedObject/Nil = 0  [So matches register ZERO = x0]
+- False = 8 = 2r01000
+- True = 16 = 2r10000
+
+Most values are initialized to _nil_, so writing zeros makes initialization easy.
+It is assumed (need to test this) that the ease of initialization and use
+will compensate for the irregulatiry in testing.  We shall see.
 
 
 ## Registers & Stack
+
+The foregoing gave a brief overview of how objects (data+behavior) are represented in memory.
+Here we describe the basics of the _runtime execution model_, how the Central
+Processing Unit or _CPU_ uses the Stack and Registers to process instructions and
+drive computation forward.
 
 We will use more registers, but stack layout is patterned after the Bee DMR.
 http://esug.org/data/ESUG2014/IWST/Papers/iwst2014_Design%20and%20implementation%20of%20Bee%20Smalltalk%20Runtime.pdf 
