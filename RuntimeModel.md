@@ -87,11 +87,11 @@ https://clementbera.wordpress.com/2014/01/16/spurs-new-object-format/
 
 Most values are known by the tag in their lower 3 bits.
 - 2r000 -> Object Oriented Pointer, or _OOP_.
-- 2r001 -> Small Integer
+- 2r001 -> Small (limited range) Integer
 - 2r010 -> Character
 - 2r100 -> Small Floating Point Number, or _float_.
 
-Three immediate values are special, _true_, _false_, and _nil_.
+Three immediate values are special: _true_, _false_, and _nil_.
 The trick here is that we don't use OOP addresses near zero.  
 So _nil_, _true_, and _false_ are known by their small values, which
 are easy to create and check in code.
@@ -104,13 +104,36 @@ Most values are initialized to _nil_, so writing zeros makes initialization easy
 It is assumed (need to test this) that the ease of initialization and use
 will compensate for the irregulatiry in testing.  We shall see.
 
-
-## Registers & Stack
+## Runtime Model
 
 The foregoing gave a brief overview of how objects (data+behavior) are represented in memory.
 Here we describe the basics of the _runtime execution model_, how the Central
 Processing Unit or _CPU_ uses the Stack and Registers to process instructions and
 drive computation forward.
+
+Method objects contain references to "literal values", code, and information about the
+method such as it's Selector symbol, number of arguments, use of registers and stack,
+if it generates ^returns, if it may generate blocks which can "escape" to live longer than
+the stack frame/thisContext and may hold captured references to values in the
+visible/lexical environment.
+
+There may be multiple "entry points" into the main body of the code, some of which do
+extra checks on the kind of arguments acceptable.  E.g. low-level addition of two small integers
+requires a _guard_ to assure that both arguments are indeed small integers.
+DoIt to the text "3 + 4" in a Workspace invokes ```SmallInteger>>+```.
+The #+ method of the SmallInteger object 3 requires one SmallInteger argment.
+If this is the case, then the simple method code adds its _self_ object, 3, to
+its argument, 4, to get 7 which it gives back as the result of the method send.
+
+If, however we try "3 + 643872648732674863287462387648723648723687423" the #+ method
+notes that its argument in a LargeInteger (or _BigNum_) and a more complex calculation
+is required.
+
+"Compelling, detailed example here, w regs + stack usage"
+" Perhaps  '3 + 4 + #ugly', which causes debugger to capture thisContext.."
+
+
+## Registers & Stack
 
 We will use more registers, but stack layout is patterned after the Bee DMR.
 http://esug.org/data/ESUG2014/IWST/Papers/iwst2014_Design%20and%20implementation%20of%20Bee%20Smalltalk%20Runtime.pdf 
