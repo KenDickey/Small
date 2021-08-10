@@ -1,11 +1,11 @@
 # Runtime Model
 
-Smalltalk is meant to be a small and simple language.
+Smalltalk is meant to be a small and simple language _for the user_.
 The syntax is minimal and basic opearations consist of Message Send, Return, and Assignment.
 Smalltalk Objects hold values, receive and send messages.
 The Wikipedia.org page on Smalltalk had a good description of this.
 
-Mapping from the source language, Smalltalk, to the target machine, RISC-V RV64G,
+Mapping from the source language, Smalltalk, to the target machine, RISC-V RV64G or Aarch64/ARMv8,
 means comparing the two world views and concentrating on the differences.
 [Note "Realisitic Compilation by Program Transformation", Kelsey & Hudak, 1989]
 (https://hashingit.com/elements/research-resources/1989-01-realistic-compilation-by-program-transformation.pdf)
@@ -129,13 +129,13 @@ If, however we try "3 + 643872648732674863287462387648723648723687423" the #+ me
 notes that its argument in a LargeInteger (or _BigNum_) and a more complex calculation
 is required.
 
-"Compelling, detailed example here, w regs + stack usage"
-" Perhaps  '3 + 4 + #ugly', which causes debugger to capture thisContext.."
+"Compelling, detailed example here, w regs + stack usage."
+" Perhaps allocate and initialize an object "
 
 
 ## Registers & Stack
 
-We will use more registers, but stack layout is patterned after the Bee DMR.
+We will use more registers, but stack layout might be patterned after the Bee DMR.
 http://esug.org/data/ESUG2014/IWST/Papers/iwst2014_Design%20and%20implementation%20of%20Bee%20Smalltalk%20Runtime.pdf 
 
 RISC-V Stack grows down and is quadword aligned.
@@ -153,8 +153,10 @@ Stack records are between the chained FramePointer regs, which point to base of 
 - Temp0 .. Temp6 in T0..T6 w spill to Stack
 - ReturnAddress in RA (x1)
 - Nil/UndefinedObject is ZERO (x0) [see below]
-- StackLimit in S10
-- KnownObjects base in S11
+- KnownObjects base in S??
+- Behavior/Class table base page in S??
+- MethodContext Header in S??
+- StackLimit in S??
 
 ### Stack Layout
 ```
@@ -170,11 +172,30 @@ Stack records are between the chained FramePointer regs, which point to base of 
 FP--->  PreviousFP>--^
 	ReturnAddress
 	...
-        arg9
-SP--->  arg8
+        arg..
+SP--->  arg
 ```
 
 Note: to interpret/convert frames into Context objects requires tracking spills and registers.
+If each method knows its frame size, then just push a MethodContext Header and set its size
+and info fields.  Zero out stack slots.  Set ReceiverReg, selector into MethodReg, Args into
+ArgRegs, Lookup Selector; Invoke Method.  [Describe PICs].
+
+Essentially, MethodContexts are allocated in the stack rather than the heap.
+Get newest thisContext from current StackPointerReg and backchain FramePointers to traverse
+(e.g. for GC).
+
+CPU Regs are known as (partition) "bits" or "OOPS" and only the OOPS get scanned by GC.
+
+To avoid "deep spill problem" (lazy caller-save register spill, deeply nested return must restore)
+the invariant is that such regs must be "eagerly" spilled before block escapes, known by compiler
+(?and annotated in MethodContext Header flags?).
+
+Saved regs alloc'ed for loop constructs to be "rare" relative to blocks to minimize spills.
+[Investigate ping/pong/coroutine register cooperation patterns].
+
+Do simple rules for "register tracking" for debug as to what/when on stack and what/when in regs
+and annotate special case details in code.
 
 
 ## Message Invocation
