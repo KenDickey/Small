@@ -153,10 +153,13 @@ Stack records are between the chained FramePointer regs, which point to base of 
 - Temp0 .. Temp6 in T0..T6 w spill to Stack
 - ReturnAddress in RA (x1)
 - Nil/UndefinedObject is ZERO (x0) [see below]
-- KnownObjects base in S??
-- Behavior/Class table base page in S??
-- MethodContext Header in S??
-- StackLimit in S??
+- KnownObjects base
+- Behavior/Class table base page
+- MethodContext Header Template
+- StackLimit
+- NextAlloc
+- AllocLimit
+[IntReg Backup/Home in Float Regs (faster than RAM)]
 
 ### Stack Layout
 ```
