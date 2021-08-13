@@ -259,3 +259,8 @@ Eliot Miranda, Clément Béra:
 "A Partial Read Barrier for Eﬀicient Support of Live
  Object-oriented Programming"
 https://hal.inria.fr/hal-01152610/file/partialReadBarrier.pdf
+
+### Possible future direction of these notes:
+
+_Smalltalk All the Way Down: An Implementers Guide_
+
