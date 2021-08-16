@@ -228,7 +228,7 @@ the requisite method or substitutes a DNU.
 Selector Ideas
 
 Selector is subclass of Symbol, but with additional slots
--  Hash2 -> room for 2 secondary hashes + a 20 bit constant ID [20 G selectors]
+-  Hash2 -> room for 2 secondary hashes + a 20 bit constant ID [1 million selectors]
 -  PIC - by selector vs by call site?
 -  As using "classIDs", can simply change class of Selector instance
 [with same "structural type"]
