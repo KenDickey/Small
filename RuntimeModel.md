@@ -214,34 +214,40 @@ Selector is subclass of Symbol, but with additional slots
 -  Hash2 -> room for 2 secondary hashes + a 20 bit constant ID [20 G selectors]
 -  PIC - by selector vs by call site?
 -  As using "classIDs", can simply change class of Selector instance
-```    Symbol
+```
+    Symbol
       |
     Selector
     / | \
    /  |  \
-Mono Poly Mega```
+Mono Poly Mega
+```
 
 Use "copydown" method strategy for MegaMorphic Methods.
 
 Registers reserved for method lookup.. 
 - A0=Receiver
 - temp0 for Selector [Temp0 is object Reg]
-- temp1 & temp2 for binary (non-object) bits.
+- temp1 & temp2 for binary (non-object) usage.
 - other temps for hash & dict lookup? TBD
 
 ### Method Lookup:
-```Before
+```
+Before
   Receiver [A0]
   Selector [Temp0]
   Args [A1..16; spill to Stack]
 After
   Receiver [A0]
   Args [A1..6;stack]
-  Method [S0]```
-### Method Dispatch:
-```  Arg Checks -> redispatch if required
+  Method [S0]
+```
+### Method Invocation:
+```
+  Arg Checks -> redispatch if required
   Prolog ->  Adjust StackPointer as required
-    [Note Tail Calls; Leaf Calls; Block ENv Capture]```
+    [Note Tail Calls; Leaf Calls; Block Env Capture]
+```
 
 ## Contexts & Exceptions
 
@@ -255,7 +261,10 @@ has become resolved).
 
 Selectors with 3 hash values -> Method lookup for specific table can use best
 case hash to reduce collisions.
-[Table class specialization on h1/h2/h3 like that for Selector specialization]
+
+Table class specialization on h1/h2/h3 like that for Selector specialization.
+
+Method specialization for tail/leaf/capture/.. like that for Selectors.
 
 ## Background Reading
 
