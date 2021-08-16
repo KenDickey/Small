@@ -138,10 +138,15 @@ is required.
 ## Registers & Stack
 
 We will use more registers, but stack layout might be patterned after the Bee DMR.
-http://esug.org/data/ESUG2014/IWST/Papers/iwst2014_Design%20and%20implementation%20of%20Bee%20Smalltalk%20Runtime.pdf 
+http://esug.org/data/ESUG2014/IWST/Papers/iwst2014_Design%20and%20implementation%20of%20Bee%20Smalltalk%20Runtime.pdf
+
+Note especially: Allen Wirfs-Brock: "Efficient Implementation of Smalltalk Block Returns"
+http://www.wirfs-brock.com/allen/things/smalltalk-things/efficient-implementation-smalltalk-block-returns
 
 RISC-V Stack grows down and is quadword aligned.
 Stack records are between the chained FramePointer regs, which point to base of stack frame, and the StackPointer itself.
+
+@@@
 
 ### Registers
 
@@ -169,32 +174,42 @@ Stack records are between the chained FramePointer regs, which point to base of 
     ..
     ..    
     ^
-    ^--<OlderFP -----<
-	temp...      ^
-	Env          ^
-        Method       ^
-	Receiver     ^
-FP--->  PreviousFP>--^
+    ^  	MethodContext-Header
+    ^--<OlderFP <---------------<
+        ReturnAddress		^
+	Receiver		^
+	Method			^
+        [Oarg..]  [oops] 	^
+	[Otemp..] [oops]	^
+	[Btemp..] [bits]	^
+	MethodContext-Header	^
+FP--->  PreviousFP >------------^
 	ReturnAddress
-	...
-        arg..
-SP--->  arg
+	Receiver
+	Method
+        arg.. 
+	temp..
+	temp..
+SP---> 	MethodContext-Header
+
 ```
+Note: For GC, a Method knows its number of args, objTemps, binaryTemps.
 
 Note: to interpret/convert frames into Context objects requires tracking spills and registers.
 If each method knows its frame size, then just push a MethodContext Header and set its size
-and info fields.  Zero out stack slots.  Set ReceiverReg, selector into MethodReg, Args into
-ArgRegs, Lookup Selector; Invoke Method.  [Describe PICs].
-
-Essentially, MethodContexts are allocated in the stack rather than the heap.
-Get newest thisContext from current StackPointerReg and backchain FramePointers to traverse
+and info fields.
+Zero out stack slots at frame alloc.
+At time of debug or exception, traverse stack
+and perform reg->stack spills before dereferencing MethodContexts.
+Get newest thisContext from current FramePointerReg and backchain FramePointers to traverse
 (e.g. for GC).
 
 CPU Regs are known as (partition) "bits" or "OOPS" and only the OOPS get scanned by GC.
+Methods know this.
 
 To avoid "deep spill problem" (lazy caller-save register spill, deeply nested return must restore)
 the invariant is that such regs must be "eagerly" spilled before block escapes, known by compiler
-(?and annotated in MethodContext Header flags?).
+[?annotate in MethodContext Header flags?]
 
 Saved regs alloc'ed for loop constructs to be "rare" relative to blocks to minimize spills.
 [Investigate ping/pong/coroutine register cooperation patterns].
@@ -243,7 +258,8 @@ Before
 After
   Receiver [A0]
   Args [A1..6;stack]
-  Method [S0]
+  Method [S1]
+  Env [S2; nil or block captures]
 ```
 ### Method Invocation:
 ```
