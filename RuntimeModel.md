@@ -21,6 +21,8 @@ As all objects know how to present themselves, the "simple to use" language
 has complex underpinnings, e.g. Garbage Collection and access to the runtime
 stack frames via #thisContext.
 
+This document collects ideas for an RISC "asm up" runtime system with adequate performance
+as a simplified "backstop runtime".
 
 ## Runtime Globals
 
@@ -214,10 +216,11 @@ Selector is subclass of Symbol, but with additional slots
 -  Hash2 -> room for 2 secondary hashes + a 20 bit constant ID [20 G selectors]
 -  PIC - by selector vs by call site?
 -  As using "classIDs", can simply change class of Selector instance
+[with same "structural type"]
 ```
     Symbol
       |
-    Selector
+   Selector
     / | \
    /  |  \
 Mono Poly Mega
@@ -265,6 +268,9 @@ case hash to reduce collisions.
 Table class specialization on h1/h2/h3 like that for Selector specialization.
 
 Method specialization for tail/leaf/capture/.. like that for Selectors.
+
+Small Objects who's lifetimes don't extend beyond the lifetime of
+a method invocation could be stack-allocated.
 
 ## Background Reading
 
