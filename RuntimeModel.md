@@ -211,15 +211,15 @@ the requisite method or substitutes a DNU.
 Selector Ideas
 
 Selector is subclass of Symbol, but with additional slots
-  Hash2 -> room for 2 secondary hashes + a 20 bit constant ID [20 G selectors]
-  PIC - by selector vs by call site?
-  As using "classIDs", can simply change class of Selector instance
-    Symbol
+-  Hash2 -> room for 2 secondary hashes + a 20 bit constant ID [20 G selectors]
+-  PIC - by selector vs by call site?
+-  As using "classIDs", can simply change class of Selector instance
+```    Symbol
       |
     Selector
     / | \
    /  |  \
-Mono Poly Mega
+Mono Poly Mega```
 
 Use "copydown" method strategy for MegaMorphic Methods.
 
@@ -230,18 +230,18 @@ Registers reserved for method lookup..
 - other temps for hash & dict lookup? TBD
 
 ### Method Lookup:
-Before
+```Before
   Receiver [A0]
   Selector [Temp0]
   Args [A1..16; spill to Stack]
 After
   Receiver [A0]
   Args [A1..6;stack]
-  Method [S0]
+  Method [S0]```
 ### Method Dispatch:
-  Arg Checks -> redispatch if required
+```  Arg Checks -> redispatch if required
   Prolog ->  Adjust StackPointer as required
-    [Note Tail Calls; Leaf Calls; Block ENv Capture]
+    [Note Tail Calls; Leaf Calls; Block ENv Capture]```
 
 ## Contexts & Exceptions
 
