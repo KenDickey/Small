@@ -187,9 +187,9 @@ FP--->  PreviousFP >------------^
 	ReturnAddress
 	Receiver
 	Method
-        arg.. 
-	temp..
-	temp..
+        [Oarg..] 
+	[Otemp..]
+	[Btemp..]
 SP---> 	MethodContext-Header
 
 ```
