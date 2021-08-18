@@ -1,6 +1,6 @@
-'From Cuis 5.0 [latest update: #4763] on 18 August 2021 at 3:03:31 pm'!
+'From Cuis 5.0 [latest update: #4763] on 18 August 2021 at 3:13:33 pm'!
 'Description String Hash Function candidates and trials'!
-!provides: 'StringHashTests' 1 9!
+!provides: 'StringHashTests' 1 10!
 SystemOrganization addCategory: #StringHashTests!
 
 
@@ -48,36 +48,37 @@ allSelectorsStatsForHashMethod: aCompiledMethod
 		ifTrue: [Transcript log: 'AllClasses count = ', selectorInfos size asString].	
 	^selectorInfos ! !
 
-!HashCandidates class methodsFor: 'perform hashes' stamp: 'KenD 8/18/2021 15:02:17'!
+!HashCandidates class methodsFor: 'perform hashes' stamp: 'KenD 8/18/2021 15:11:29'!
 globalCompare
 	"Find Best Hashes across all methodDictionaries"
 
-	| hashfuns results winner index |
+	| hashfuns results winner |
 	hashfuns := 
 		{String>>#hash.
+		  String>>#hash3.
 		  ProtoObject>>#identityHash.
 		  String>>#hash0.
-		  String>>#hash1.
 		  String>>#hash2.
-		  String>>#hash3.
+		  String>>#hash1.
 		  String>>#hash4.}.
 	results := hashfuns collect: [ :hfun | 
 		HashCandidates allSelectorsStatsForHashMethod: hfun 
 	 ].
 	(self hasFlag: $H)
 		ifTrue: [Transcript log: 'HashFun count = ', results size asString].
-	index := 1.
-	winner := results at: index.
+
+	winner := results at: 1.
 	2 to: results size do: [ :idx2 | 
 		(self hasFlag: $B) ifTrue: [
 			 Transcript 
 				log: 'hashA= #', 
-					(hashfuns at: idx2-1) selector asString,
-					' hashB= #',
+					(hashfuns at: (results indexOf: winner)) selector asString,
+					' ,   hashB= #',
 					(hashfuns at: idx2) selector asString.
 		].
-		winner := HashCandidates histCollectionBestBetween: winner 
-		and: (results at: idx2).
+		winner := HashCandidates 
+					histCollectionBestBetween: winner 
+					and: (results at: idx2).
  
 	].
 	^(hashfuns at: (results findFirst: [ :val | val = winner])) selector
