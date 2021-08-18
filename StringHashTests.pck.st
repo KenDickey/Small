@@ -1,16 +1,16 @@
-'From Cuis 5.0 [latest update: #4763] on 17 August 2021 at 5:14:09 pm'!
+'From Cuis 5.0 [latest update: #4749] on 17 August 2021 at 8:07:33 pm'!
 'Description String Hash Function candidates and trials'!
-!provides: 'StringHashTests' 1 3!
-SystemOrganization addCategory: #StringHashTests!
+!provides: 'StringHashTests' 1 6!
+SystemOrganization addCategory: 'StringHashTests'!
 
 
-!classDefinition: #HashCandidates category: #StringHashTests!
+!classDefinition: #HashCandidates category: 'StringHashTests'!
 String variableByteSubclass: #HashCandidates
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'StringHashTests'!
-!classDefinition: 'HashCandidates class' category: #StringHashTests!
+!classDefinition: 'HashCandidates class' category: 'StringHashTests'!
 HashCandidates class
 	instanceVariableNames: ''!
 
@@ -34,6 +34,67 @@ MethodDictionary lookup choices, so the desired hash is used in Selector lookup.
 As Selector hashes are calculated when methods are compiled, they do NOT have 
 to be fast..
 !
+
+!HashCandidates class methodsFor: 'comparing' stamp: 'KenD 8/17/2021 20:03:35'!
+histCollectionBestBetween: collA and: collB
+	"collA and collB are collections of (className,mDictSize,histogram).  Pick the best one"
+	| countA countB |
+	(collA size = collB size) ifFalse: [ self error: 'unequal collections'].
+	countA := countB := 0.
+	1 to: collA size do: [ :index |
+		"#{classname, tableSize, histogram}"
+		(HashCandidates  histogram: ((collA at: index) at: 3) 
+						lessThan:   ((collB at: index) at: 3))
+			ifTrue: [ countA := countA + 1 ]
+		 	ifFalse: [ countB := countB+ 1 ]
+	].
+	(countA > countB)
+		ifTrue:  [^collA]  
+		ifFalse: [^collB]
+	! !
+
+!HashCandidates class methodsFor: 'comparing' stamp: 'KenD 8/17/2021 20:05:52'!
+histogram: histA lessThan: histB
+	"Given two histograms, return a < b is a is better"
+	(histA size < histB size) ifTrue: [^ true ].
+	(histB size < histA size) ifTrue: [^ false].
+
+	1 to: (histA size) do: [ :index |
+		(histA at: index) < (histB at: index) ifTrue: [^true ].
+		(histB at: index) < (histA at: index) ifTrue: [^false].
+	].
+	^false "Same"
+! !
+
+!HashCandidates class methodsFor: 'perform hashes' stamp: 'KenD 8/17/2021 18:28:46'!
+allSelectorsStatsForHashMethod: aCompiledMethod
+	"{aClass printString. tableSize. histogram}"
+	
+	| selectorInfos |
+	selectorInfos := Smalltalk allClasses 
+		collect:  [ :aClass | HashCandidates hashSelectorsFor: aClass hashMethod: aCompiledMethod ].
+	
+	^selectorInfos ! !
+
+!HashCandidates class methodsFor: 'perform hashes' stamp: 'KenD 8/17/2021 20:06:58'!
+globalCompare
+	"Find Best Hashes across all methodDictionaries"
+
+	| hashfuns results winner |
+	hashfuns := 
+		{String>>#hash.
+		  ProtoObject>>#identityHash.
+		  String>>#hash0.
+		  String>>#hash1.
+		  String>>#hash2.
+		  String>>#hash3.
+		  String>>#hash4.}.
+	results := hashfuns collect: [ :hfun | HashCandidates allSelectorsStatsForHashMethod: hfun ].
+	winner := results 
+				inject: (results at: 1) 
+				into: [ :best :next | HashCandidates histCollectionBestBetween: best and: next ].
+	^(hashfuns at: (results findFirst: [ :val | val = winner])) selector
+! !
 
 !HashCandidates class methodsFor: 'perform hashes' stamp: 'KenD 8/17/2021 15:56:15'!
 hashSelectorsFor: aClass
