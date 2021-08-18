@@ -1,6 +1,6 @@
-'From Cuis 5.0 [latest update: #4763] on 18 August 2021 at 3:13:33 pm'!
+'From Cuis 5.0 [latest update: #4763] on 18 August 2021 at 4:32:59 pm'!
 'Description String Hash Function candidates and trials'!
-!provides: 'StringHashTests' 1 10!
+!provides: 'StringHashTests' 1 13!
 SystemOrganization addCategory: #StringHashTests!
 
 
@@ -48,19 +48,56 @@ allSelectorsStatsForHashMethod: aCompiledMethod
 		ifTrue: [Transcript log: 'AllClasses count = ', selectorInfos size asString].	
 	^selectorInfos ! !
 
-!HashCandidates class methodsFor: 'perform hashes' stamp: 'KenD 8/18/2021 15:11:29'!
+!HashCandidates class methodsFor: 'perform hashes' stamp: 'KenD 8/18/2021 16:29:04'!
+globalCollisionsCounts
+	"Find Best Hashes across all methodDictionaries"
+
+	| hashfuns results collisions |
+	hashfuns := 
+		{
+		  String>>#hash.
+		  ProtoObject>>#identityHash.
+		  String>>#hash0.
+		  String>>#hash1.
+		  String>>#hash2.
+		  String>>#hash3.
+		  String>>#hash4.
+		  }.
+	results := hashfuns collect: [ :hfun | 
+		HashCandidates allSelectorsStatsForHashMethod: hfun 
+	 ].
+	collisions := results collect: [ :hashStats | "array of {className, mDictSize, histogram}"
+		self collisionsFromStats: hashStats.
+	].
+
+	(self hasFlag: $H)
+		ifTrue: [
+			1 to: hashfuns size do: [ :idx |
+				Transcript log: '#', 
+						(hashfuns at: idx) selector asString,
+						' collisions = ', (collisions at: idx) asString
+			]
+		].
+
+	^collisions 
+	
+! !
+
+!HashCandidates class methodsFor: 'perform hashes' stamp: 'KenD 8/18/2021 15:20:41'!
 globalCompare
 	"Find Best Hashes across all methodDictionaries"
 
 	| hashfuns results winner |
 	hashfuns := 
-		{String>>#hash.
+		{
+		  String>>#hash4.
+		  String>>#hash.
 		  String>>#hash3.
 		  ProtoObject>>#identityHash.
 		  String>>#hash0.
 		  String>>#hash2.
 		  String>>#hash1.
-		  String>>#hash4.}.
+		  }.
 	results := hashfuns collect: [ :hfun | 
 		HashCandidates allSelectorsStatsForHashMethod: hfun 
 	 ].
@@ -211,7 +248,25 @@ HashCandidates hashSelectorsFor: String hashMethod: String>>#hash3.  "#(String 5
 HashCandidates hashSelectorsFor: String hashMethod: String>>#hash4.  "#(String 512 #(323 156 25 7 0 1)) "
 '! !
 
-!HashCandidates class methodsFor: 'comparing' stamp: 'KenD 8/18/2021 12:56:57'!
+!HashCandidates class methodsFor: 'hashstats' stamp: 'KenD 8/18/2021 16:21:08'!
+collisionsFromHIstogram: histogram
+"hist at: 1 is number of empty slots
+ hist at: 2 is number of singletons in bucket (good)
+ higher indices -> number of buckets with this number of collisions (increasingly bad) 
+"	
+	| count |
+	count := 0.
+	3 to: histogram size 
+	   do: [ :idx | count := count + ((idx-2) * (histogram at: idx))].
+	^count! !
+
+!HashCandidates class methodsFor: 'hashstats' stamp: 'KenD 8/18/2021 16:25:32'!
+collisionsFromStats: hashStats
+	"hashStats is array of {className, mDictSize, histogram}"
+	^hashStats inject: 0 
+			   into: [ :count :stat | count + (self collisionsFromHIstogram: (stat at: 3) )]! !
+
+!HashCandidates class methodsFor: 'comparing' stamp: 'KenD 8/18/2021 15:40:04'!
 histCollectionBestBetween: collA and: collB
 	"collA and collB are arrays of {className,mDictSize,histogram}.  Pick the best one"
 	| countA countB |
@@ -221,8 +276,8 @@ histCollectionBestBetween: collA and: collB
 		"Array of {classname, tableSize, histogram}"
 		(HashCandidates  histogram: ((collA at: index) at: 3) 
 						lessThan:   ((collB at: index) at: 3))
-			ifTrue:  [ countA := countA + 1 ]
-		 	ifFalse: [ countB := countB+ 1 ]
+			ifTrue:  [ countA := countA + 1 ] "A better"
+		 	ifFalse: [ countB := countB+ 1 ]  "B Better"
 	].
 	(self hasFlag: $B)
 		ifTrue: [
@@ -235,33 +290,24 @@ histCollectionBestBetween: collA and: collB
 		ifFalse: [^collB]
 	! !
 
-!HashCandidates class methodsFor: 'comparing' stamp: 'KenD 8/18/2021 14:30:16'!
+!HashCandidates class methodsFor: 'comparing' stamp: 'KenD 8/18/2021 16:01:35'!
 histogram: histA lessThan: histB
 	"Given two histograms, return (A < B) => A is better"
 	| negValA negValB |
-"shorter is better (fewer collisions)"
-	(histA size < histB size) ifTrue: [^ true ].
-	(histB size < histA size) ifTrue: [^ false].
+"Want Minimum number of Collisions"
 "hist at: 1 is number of empty slots
  hist at: 2 is number of singletons in bucket (good)
- higher indices -> number of collisions (increasingly bad) 
+ higher indices -> number of buckets with this number of collisions (increasingly bad) 
 "
 	negValA := negValB := 0.
-	3 to: histA size do: [ :indx0 | negValA := negValA + (indx0 squared * (histA at: indx0))].
-	3 to: histB size do: [ :indx1 | negValB := negValB + (indx1 squared * (histB at: indx1))].
+	3 to: histA size do: [ :indx0 | negValA := negValA + ((indx0-2) * (histA at: indx0))].
+	3 to: histB size do: [ :indx1 | negValB := negValB + ((indx1-2) * (histB at: indx1))].
 	(self hasFlag: $N)
 		ifTrue: [Transcript 
 				log: 'negValA= ', negValA asString, ' negValB= ', negValB asString
 		].
+	^ (negValA <= negValB)  "True if A has fewer or same collisions than B"
 
-	"@@FIXME: relate to hist at: 2"
-	(negValA < negValB) ifTrue: [^ true].
-	(negValB < negValA) ifTrue: [^ false]. 
-	2 to: (histA size) do: [ :index |
-		(histA at: index) > (histB at: index) ifTrue: [^true ].
-		(histB at: index) > (histA at: index) ifTrue: [^false].
-	].
-	^false "Same"
 ! !
 
 !HashCandidates class methodsFor: 'transcripting' stamp: 'KenD 8/18/2021 12:37:33'!
