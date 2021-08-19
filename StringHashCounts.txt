@@ -1,0 +1,33 @@
+Transcript
+HashCandidates setFlag: $B.
+HashCandidates setFlag: $H.
+HashCandidates globalCollisionsCounts.
+#hash collisions = 5466
+#identityHash collisions = 6534
+#hash0 collisions = 5331
+#hash1 collisions = 5301
+#hash2 collisions = 5419
+#hash3 collisions = 5442
+#hash4 collisions = 5436
+#hash5 collisions = 14630
+#hash6 collisions = 5442
+#hash7 collisions = 5436
+#hash8 collisions = 18708
+#hash9 collisions = 25344
+#hash10 collisions = 23518
+#(5466 6534 5331 5301 5419 5442 5436 14630 5442 5436 18708 25344 23518)
+HashCandidates globalHashWinCounts.
+#hash win count = 664
+#identityHash win count = 610
+#hash0 win count = 672
+#hash1 win count = 680
+#hash2 win count = 662
+#hash3 win count = 679
+#hash4 win count = 666
+#hash5 win count = 429
+#hash6 win count = 679
+#hash7 win count = 666
+#hash8 win count = 350
+#hash9 win count = 247
+#hash10 win count = 263
+#(664 610 672 680 662 679 666 429 679 666 350 247 263)
