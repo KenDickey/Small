@@ -1,13 +1,13 @@
-'From Cuis 5.0 [latest update: #4763] on 18 August 2021 at 4:32:59 pm'!
+'From Cuis 5.0 [latest update: #4763] on 19 August 2021 at 2:28:51 pm'!
 'Description String Hash Function candidates and trials'!
-!provides: 'StringHashTests' 1 13!
+!provides: 'StringHashTests' 1 14!
 SystemOrganization addCategory: #StringHashTests!
 
 
 !classDefinition: #HashCandidates category: #StringHashTests!
 String variableByteSubclass: #HashCandidates
 	instanceVariableNames: ''
-	classVariableNames: 'ReportFlags'
+	classVariableNames: 'ReportFlags StringHashFuns'
 	poolDictionaries: ''
 	category: 'StringHashTests'!
 !classDefinition: 'HashCandidates class' category: #StringHashTests!
@@ -48,22 +48,12 @@ allSelectorsStatsForHashMethod: aCompiledMethod
 		ifTrue: [Transcript log: 'AllClasses count = ', selectorInfos size asString].	
 	^selectorInfos ! !
 
-!HashCandidates class methodsFor: 'perform hashes' stamp: 'KenD 8/18/2021 16:29:04'!
+!HashCandidates class methodsFor: 'perform hashes' stamp: 'KenD 8/19/2021 13:28:34'!
 globalCollisionsCounts
 	"Find Best Hashes across all methodDictionaries"
+	| results collisions |
 
-	| hashfuns results collisions |
-	hashfuns := 
-		{
-		  String>>#hash.
-		  ProtoObject>>#identityHash.
-		  String>>#hash0.
-		  String>>#hash1.
-		  String>>#hash2.
-		  String>>#hash3.
-		  String>>#hash4.
-		  }.
-	results := hashfuns collect: [ :hfun | 
+	results := StringHashFuns collect: [ :hfun | 
 		HashCandidates allSelectorsStatsForHashMethod: hfun 
 	 ].
 	collisions := results collect: [ :hashStats | "array of {className, mDictSize, histogram}"
@@ -72,9 +62,9 @@ globalCollisionsCounts
 
 	(self hasFlag: $H)
 		ifTrue: [
-			1 to: hashfuns size do: [ :idx |
+			1 to: StringHashFuns size do: [ :idx |
 				Transcript log: '#', 
-						(hashfuns at: idx) selector asString,
+						(StringHashFuns at: idx) selector asString,
 						' collisions = ', (collisions at: idx) asString
 			]
 		].
@@ -83,22 +73,12 @@ globalCollisionsCounts
 	
 ! !
 
-!HashCandidates class methodsFor: 'perform hashes' stamp: 'KenD 8/18/2021 15:20:41'!
+!HashCandidates class methodsFor: 'perform hashes' stamp: 'KenD 8/19/2021 13:29:19'!
 globalCompare
 	"Find Best Hashes across all methodDictionaries"
+	| results winner |
 
-	| hashfuns results winner |
-	hashfuns := 
-		{
-		  String>>#hash4.
-		  String>>#hash.
-		  String>>#hash3.
-		  ProtoObject>>#identityHash.
-		  String>>#hash0.
-		  String>>#hash2.
-		  String>>#hash1.
-		  }.
-	results := hashfuns collect: [ :hfun | 
+	results := StringHashFuns collect: [ :hfun | 
 		HashCandidates allSelectorsStatsForHashMethod: hfun 
 	 ].
 	(self hasFlag: $H)
@@ -109,16 +89,52 @@ globalCompare
 		(self hasFlag: $B) ifTrue: [
 			 Transcript 
 				log: 'hashA= #', 
-					(hashfuns at: (results indexOf: winner)) selector asString,
+					(StringHashFuns at: (results indexOf: winner)) selector asString,
 					' ,   hashB= #',
-					(hashfuns at: idx2) selector asString.
+					(StringHashFuns at: idx2) selector asString.
 		].
 		winner := HashCandidates 
 					histCollectionBestBetween: winner 
 					and: (results at: idx2).
  
 	].
-	^(hashfuns at: (results findFirst: [ :val | val = winner])) selector
+	^(StringHashFuns at: (results findFirst: [ :val | val = winner])) selector
+! !
+
+!HashCandidates class methodsFor: 'perform hashes' stamp: 'KenD 8/19/2021 13:29:58'!
+globalHashWinCounts
+	"Count Hash wins across all methodDictionaries.
+	 Win -> minimum hash collisions within a methodDictionary"
+	| wins |
+
+	wins := Array new: StringHashFuns size withAll: 0.
+	Smalltalk allClassesDo: [ :aClass | | collisions minCollision |
+		collisions := StringHashFuns collect: 
+			[ :hfun |  self collisionsFromHIstogram: 
+					((self hashSelectorsFor: aClass hashMethod: hfun) at: 3)].
+		minCollision := 
+			collisions 
+				inject: 0 
+				into: [ :minCollide :nextCollide | 
+						minCollide min: nextCollide].
+		1 to: StringHashFuns size do: [ :index | 
+			(minCollision = (collisions at: index)) 
+				"May be multiple winners with least collisions"
+				ifTrue: [ wins at: index put: (1 + wins at: index)].
+		]
+	 ].
+
+	(self hasFlag: $H)
+		ifTrue: [
+			1 to: StringHashFuns size do: [ :idx |
+				Transcript log: '#', 
+						(StringHashFuns at: idx) selector asString,
+						' win count = ', (wins at: idx) asString
+			]
+		].
+
+	^wins 
+	
 ! !
 
 !HashCandidates class methodsFor: 'perform hashes' stamp: 'KenD 8/17/2021 15:56:15'!
@@ -260,11 +276,12 @@ collisionsFromHIstogram: histogram
 	   do: [ :idx | count := count + ((idx-2) * (histogram at: idx))].
 	^count! !
 
-!HashCandidates class methodsFor: 'hashstats' stamp: 'KenD 8/18/2021 16:25:32'!
+!HashCandidates class methodsFor: 'hashstats' stamp: 'KenD 8/19/2021 12:59:03'!
 collisionsFromStats: hashStats
 	"hashStats is array of {className, mDictSize, histogram}"
 	^hashStats inject: 0 
-			   into: [ :count :stat | count + (self collisionsFromHIstogram: (stat at: 3) )]! !
+			   into: [ :count :stat | 
+				count + (self collisionsFromHIstogram: (stat at: 3) )]! !
 
 !HashCandidates class methodsFor: 'comparing' stamp: 'KenD 8/18/2021 15:40:04'!
 histCollectionBestBetween: collA and: collB
@@ -341,11 +358,27 @@ setFlag: aChar
 	(ReportFlags includes: aChar)
 		ifFalse: [ ReportFlags := ReportFlags , aChar asString ]! !
 
-!HashCandidates class methodsFor: 'class initialization' stamp: 'KenD 8/18/2021 12:33:11'!
+!HashCandidates class methodsFor: 'class initialization' stamp: 'KenD 8/19/2021 14:02:57'!
 initialize
 	"self initialize"
 	
-	ReportFlags := ''.  "String treated as a set of character flags"! !
+	ReportFlags := ''.  "String treated as a set of character flags"
+	StringHashFuns :=
+		{
+		  String>>#hash.
+		  ProtoObject>>#identityHash.
+		  String>>#hash0.
+		  String>>#hash1.
+		  String>>#hash2.
+		  String>>#hash3.
+		  String>>#hash4.
+		  String>>#hash5.
+		  String>>#hash6.
+		  String>>#hash7.
+		  String>>#hash8.
+		  String>>#hash9.
+		  String>>#hash10.
+		  }.! !
 
 !String methodsFor: '*stringhashtests' stamp: 'KenD 8/17/2021 16:10:33'!
 hash0
@@ -359,15 +392,27 @@ hash0
 	].
 	^ result bitAnd: 16rFFFFFFF! !
 
-!String methodsFor: '*stringhashtests' stamp: 'KenD 8/17/2021 16:44:24'!
+!String methodsFor: '*stringhashtests' stamp: 'KenD 8/19/2021 13:54:13'!
 hash1
-	"Knuth"
+	"K&R"
 
 	| result |
 	result := 0.
 	self do: [ :char |
 		result := result * 31.
 		result := result + char asciiValue 
+	].
+	^ result bitAnd: 16rFFFFFFF! !
+
+!String methodsFor: '*stringhashtests' stamp: 'KenD 8/19/2021 13:59:46'!
+hash10
+	"FNVHash"
+
+	| result |
+	result := 2166136261. "offset32"
+	self do: [ :char |
+		result := result * 16777619. "prime32"
+		result := result bitAnd: char asciiValue 
 	].
 	^ result bitAnd: 16rFFFFFFF! !
 
@@ -382,9 +427,9 @@ hash2
 	].
 	^ result bitAnd: 16rFFFFFFF! !
 
-!String methodsFor: '*stringhashtests' stamp: 'KenD 8/17/2021 16:52:00'!
+!String methodsFor: '*stringhashtests' stamp: 'KenD 8/19/2021 13:50:58'!
 hash3
-	"RSHash"
+	"RSHashMod"
 
 	| result |
 	result := 0.
@@ -393,9 +438,9 @@ hash3
 	].
 	^ result bitAnd: 16rFFFFFFF! !
 
-!String methodsFor: '*stringhashtests' stamp: 'KenD 8/17/2021 16:57:57'!
+!String methodsFor: '*stringhashtests' stamp: 'KenD 8/19/2021 13:48:55'!
 hash4
-	"UHash"
+	"UHashMod"
 
 	| result rand1 rand2 |
 	result := 0.
@@ -405,6 +450,75 @@ hash4
 		result := result * rand1.
 		result := (result + char asciiValue).
 		rand1 := rand1 * rand2.
+	].
+	^ result bitAnd: 16rFFFFFFF! !
+
+!String methodsFor: '*stringhashtests' stamp: 'KenD 8/19/2021 13:43:54'!
+hash5
+	"PJWHash1"
+
+	| result highBits|
+	result := 0.
+	self do: [ :char |
+		result := result bitShift: 4.
+		result := (result + char asciiValue).
+		highBits := result bitAnd: 16rF0000000.
+		(highBits = 0) ifFalse: [ 
+			result := result bitAnd: (highBits bitShift: -24)
+		].
+	].
+	^ result bitAnd: 16rFFFFFFF! !
+
+!String methodsFor: '*stringhashtests' stamp: 'KenD 8/19/2021 13:48:13'!
+hash6
+	"RSHash"
+
+	| result |
+	result := 0.
+	self do: [ :char | 
+		result := result * 127.
+		result := (result + char asciiValue) bitAnd: 16rFFFFFFF].
+	
+	^ result bitAnd: 16rFFFFFFF! !
+
+!String methodsFor: '*stringhashtests' stamp: 'KenD 8/19/2021 13:49:59'!
+hash7
+	"UHash"
+
+	| result rand1 rand2 |
+	result := 0.
+	rand1 := 31415.
+	rand2 := 27183.
+	self do: [ :char |
+		result := result * rand1.
+		result := (result + char asciiValue) bitAnd: 16rFFFFFFF.
+		rand1 := (rand1 * rand2) bitAnd: 16rFFFFFFF.
+	].
+	^ result bitAnd: 16rFFFFFFF! !
+
+!String methodsFor: '*stringhashtests' stamp: 'KenD 8/19/2021 13:53:35'!
+hash8
+	"DJ1B2"
+
+	| result |
+	result := 5381.
+	self do: [ :char |
+		result := result bitShift: 5.
+		result := result + result. "?Isn't this just one more left shift?"
+		result := result + char asciiValue 
+	].
+	^ result bitAnd: 16rFFFFFFF! !
+
+!String methodsFor: '*stringhashtests' stamp: 'KenD 8/19/2021 13:56:47'!
+hash9
+	"Knuth"
+
+	| result |
+	result := self size.
+	self do: [ :char |
+		result := result bitShift: 5.
+		result := result bitAnd: (result bitShift: -27).
+		result := result bitAnd: char asciiValue 
 	].
 	^ result bitAnd: 16rFFFFFFF! !
 HashCandidates initialize!
