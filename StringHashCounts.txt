@@ -1,7 +1,10 @@
 Transcript
 HashCandidates setFlag: $B.
 HashCandidates setFlag: $H.
-HashCandidates globalCollisionsCounts.
+
+"Count has collisions for each of 1500 methodDict selector hashes"
+HashCandidates globalCollisionsCounts.  "Lower is Better"
+
 #hash collisions = 5466
 #identityHash collisions = 6534
 #hash0 collisions = 5331
@@ -15,8 +18,12 @@ HashCandidates globalCollisionsCounts.
 #hash8 collisions = 18708
 #hash9 collisions = 25344
 #hash10 collisions = 23518
+
 #(5466 6534 5331 5301 5419 5442 5436 14630 5442 5436 18708 25344 23518)
-HashCandidates globalHashWinCounts.
+
+"For each Class methodDict, which hash has the fewest collisions"
+HashCandidates globalHashWinCounts. "Higher is Better"
+
 #hash win count = 664
 #identityHash win count = 610
 #hash0 win count = 672
@@ -30,4 +37,5 @@ HashCandidates globalHashWinCounts.
 #hash8 win count = 350
 #hash9 win count = 247
 #hash10 win count = 263
+
 #(664 610 672 680 662 679 666 429 679 666 350 247 263)
