@@ -1,6 +1,6 @@
-'From Cuis 5.0 [latest update: #4763] on 19 August 2021 at 2:28:51 pm'!
+'From Cuis 5.0 [latest update: #4763] on 20 August 2021 at 2:01:34 pm'!
 'Description String Hash Function candidates and trials'!
-!provides: 'StringHashTests' 1 14!
+!provides: 'StringHashTests' 1 15!
 SystemOrganization addCategory: #StringHashTests!
 
 
@@ -101,7 +101,61 @@ globalCompare
 	^(StringHashFuns at: (results findFirst: [ :val | val = winner])) selector
 ! !
 
-!HashCandidates class methodsFor: 'perform hashes' stamp: 'KenD 8/19/2021 13:29:58'!
+!HashCandidates class methodsFor: 'perform hashes' stamp: 'KenD 8/20/2021 13:33:17'!
+globalHashNoTiePattern
+	"Return cases of win ties across hashes"
+	| tiePattern  |
+
+	tiePattern := OrderedCollection new.
+	Smalltalk allClassesDo: [ :aClass | | collisions minCollision ties tieCount |
+		collisions := StringHashFuns collect: 
+			[ :hfun |  self collisionsFromHIstogram: 
+					((self hashSelectorsFor: aClass hashMethod: hfun) at: 3)].
+		minCollision := 
+			collisions 
+				inject: 500
+				into: [ :minCollide :nextCollide | 
+						minCollide min: nextCollide].
+		tieCount := 0.
+		ties := collisions collect: [ :c | (c = minCollision) 
+						ifTrue: [tieCount := tieCount + 1. 1] 
+						ifFalse: [0]
+		].
+		(tieCount > 1) ifFalse: [ tiePattern addLast: ties ].
+	 ].
+
+	^tiePattern
+	
+! !
+
+!HashCandidates class methodsFor: 'perform hashes' stamp: 'KenD 8/20/2021 13:25:02'!
+globalHashTiePattern
+	"Return cases of win ties across hashes"
+	| tiePattern  |
+
+	tiePattern := OrderedCollection new.
+	Smalltalk allClassesDo: [ :aClass | | collisions minCollision ties tieCount |
+		collisions := StringHashFuns collect: 
+			[ :hfun |  self collisionsFromHIstogram: 
+					((self hashSelectorsFor: aClass hashMethod: hfun) at: 3)].
+		minCollision := 
+			collisions 
+				inject: 500
+				into: [ :minCollide :nextCollide | 
+						minCollide min: nextCollide].
+		tieCount := 0.
+		ties := collisions collect: [ :c | (c = minCollision) 
+						ifTrue: [tieCount := tieCount + 1. 1] 
+						ifFalse: [0]
+		].
+		(tieCount > 1) ifTrue: [ tiePattern addLast: ties ].
+	 ].
+
+	^tiePattern
+	
+! !
+
+!HashCandidates class methodsFor: 'perform hashes' stamp: 'KenD 8/20/2021 13:05:27'!
 globalHashWinCounts
 	"Count Hash wins across all methodDictionaries.
 	 Win -> minimum hash collisions within a methodDictionary"
@@ -114,7 +168,7 @@ globalHashWinCounts
 					((self hashSelectorsFor: aClass hashMethod: hfun) at: 3)].
 		minCollision := 
 			collisions 
-				inject: 0 
+				inject:  500
 				into: [ :minCollide :nextCollide | 
 						minCollide min: nextCollide].
 		1 to: StringHashFuns size do: [ :index | 
@@ -326,6 +380,18 @@ histogram: histA lessThan: histB
 	^ (negValA <= negValB)  "True if A has fewer or same collisions than B"
 
 ! !
+
+!HashCandidates class methodsFor: 'comparing' stamp: 'KenD 8/20/2021 13:39:55'!
+patternCounts: arrayOfArray
+	"Array of same length arrays, sum counts"
+	| sums |
+	sums := Array new: (arrayOfArray at: 1) size withAll: 0.
+	arrayOfArray do: [ :counts |
+		1 to: counts size do: [ :index | "mostly add zero, but so what?"
+			sums at: index put: ((sums at: index) + (counts at: index))
+		]
+	].
+	^sums! !
 
 !HashCandidates class methodsFor: 'transcripting' stamp: 'KenD 8/18/2021 12:37:33'!
 clearFlag: aChar
