@@ -1,4 +1,11 @@
 Smalltalk allClasses size.  " 1527 "
+[ | selectors |
+  selectors := Set new.
+  Smalltalk allClassesDo: [ :cls |
+     cls methodDict keysDo: [ :sel | selectors add: sel ]
+  ].
+  selectors size ] value.  " 17515 "
+
 
 tiePat := HashCandidates globalHashTiePattern .    "size -> 1227" 
 winPat := HashCandidates globalHashNoTiePattern.   "size ->  300"
