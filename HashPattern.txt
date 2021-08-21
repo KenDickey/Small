@@ -1,10 +1,13 @@
 Smalltalk allClasses size.  " 1527 "
 
-HashCandidates globalCompare.    
-tiePat := HashCandidates globalHashTiePattern .           "size -> 1227" 
-winPat := HashCandidates globalHashNoTiePattern.       "size ->  300"
-HashCandidates patternCounts: winPat.  " #(   76    40      92     28     63      0      0          0       0       0         1        0          0) "
-HashCandidates patternCounts: tiePat.   " #( 756   681   780   833   770   857   852     432   857   852     350    247      263) "
-HashCandidates globalHashWinCounts.  " #( 832   721   872   861   833   857   852     432   857   852     351    247      263) "
-"                                                                    hash idHash   h0     h1     h2   h3 ...  "
-HashCandidates globalCollisionsCounts. " #(5466 6534 5331 5301 5419 5442 5436 14630 5442 5436 18708 25344 23518) 
+tiePat := HashCandidates globalHashTiePattern .    "size -> 1227" 
+winPat := HashCandidates globalHashNoTiePattern.   "size ->  300"
+HashCandidates patternCounts: winPat.
+" #(  76   40   92    28   63    0    0     0    0    0     1     0    0) "
+HashCandidates patternCounts: tiePat.
+" #( 756  681  780   833  770  857  852   432  857  852   350   247  263) "
+HashCandidates globalHashWinCounts.
+" #( 832  721  872   861  833  857  852   432  857  852   351   247  263) "
+"   hash idHash h0    h1   h2   h3   h4    h5   h6   h7    h8    h9  h10 "
+HashCandidates globalCollisionsCounts.
+" #(5466 6534 5331  5301 5419 5442 5436 14630 5442 5436 18708 25344 23518) 
