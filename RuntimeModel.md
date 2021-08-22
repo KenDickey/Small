@@ -235,13 +235,18 @@ Selector is subclass of Symbol, but with additional slots
 ```
     Symbol
       |
-   Selector
-    / | \
-   /  |  \
-Mono Poly Mega
+     Selector
+    /  |  \  \
+   /   |   \  \
+Mono Poly Mega isA
 ```
+Use "copydown" method strategy for MegaMorphic Methods. [Only check 1 mDict]
 
-Use "copydown" method strategy for MegaMorphic Methods.
+#isA pattern: Just a subclass test.  Use sorted vector of ClassIDs (highest first).
+Linear search.
+
+[Duo? Special case of Monomorphic w 1 override?]
+
 
 Registers reserved for method lookup.. 
 - A0=Receiver
@@ -287,6 +292,11 @@ Method specialization for tail/leaf/capture/.. like that for Selectors.
 
 Small Objects who's lifetimes don't extend beyond the lifetime of
 a method invocation could be stack-allocated.
+
+Within the context of a Class, trivial slot accessors could be open-coded.
+
+With argument literals, one could preform subclass tests at compile time; other constant propagarion.
+This requires recompilation when overrides.
 
 ## Background Reading
 
