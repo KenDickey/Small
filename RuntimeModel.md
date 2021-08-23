@@ -331,6 +331,12 @@ Eliot Miranda, Clément Béra:
  Object-oriented Programming"
 https://hal.inria.fr/hal-01152610/file/partialReadBarrier.pdf
 
+### Register Allocation
+
+Yin Wang and R. Kent Dybvig:
+"Register Allocation By Model Transformer Semantics"
+https://arxiv.org/pdf/1202.5539.pdf
+
 ### Possible future direction of these notes:
 
 _Smalltalk All the Way Down: An Implementers Guide_
