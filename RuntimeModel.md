@@ -245,7 +245,7 @@ Use "copydown" method strategy for MegaMorphic Methods. [Only check 1 mDict]
 #isA pattern: Just a subclass test.  Use sorted vector of ClassIDs (highest first).
 Linear search.
 
-[Duo? Special case of Monomorphic w 1 override?]
+[Duo? Special case of Monomorphic w 1 override? -> use subclass test (above)]
 
 
 Registers reserved for method lookup.. 
