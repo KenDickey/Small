@@ -234,32 +234,31 @@ Selector is subclass of Symbol, but with additional slots
 [with same "structural type"]
 ```
     Symbol
-      |
-     Selector
-    /  |  \  \
-   /   |   \  \
-Mono Poly Mega isA
+       |
+    Selector
+    /  |  \  
+   /   |   \  
+Mono Poly Mega
 ```
 Use "copydown" method strategy for MegaMorphic Methods. [Only check 1 mDict]
 
-#isA pattern: Just a subclass test.  Use sorted vector of ClassIDs (highest first).
+? #isA pattern: Just a subclass test.  Use sorted vector of ClassIDs (highest first).
 Linear search.
 
 [Duo? Special case of Monomorphic w 1 override? -> use subclass test (above)]
 
-
 Registers reserved for method lookup.. 
 - A0=Receiver
 - temp0 for Selector [Temp0 is object Reg]
-- temp1 & temp2 for binary (non-object) usage.
-- other temps for hash & dict lookup? TBD
+- temp1 & temp2 for binary (non-object) usage? [select ranges]
+- other temps for hash & dict lookup? [TBD]
 
 ### Method Lookup:
 ```
 Before
   Receiver [A0]
-  Selector [Temp0]
   Args [A1..16; spill to Stack]
+  Selector [Temp0]
 After
   Receiver [A0]
   Args [A1..6;stack]
@@ -272,6 +271,9 @@ After
   Prolog ->  Adjust StackPointer as required
     [Note Tail Calls; Leaf Calls; Block Env Capture]
 ```
+Note: Keep, Hearn and Dybvig
+"Optimizing Closures in O(0) time"
+http://www.schemeworkshop.org/2012/papers/keep-hearn-dybvig-paper-sfp12.pdf
 
 ## Contexts & Exceptions
 
@@ -297,6 +299,19 @@ Within the context of a Class, trivial slot accessors could be open-coded.
 
 With argument literals, one could preform subclass tests at compile time; other constant propagarion.
 This requires recompilation when overrides.
+
+Inlining: Use #Pragmas to annotate known objects and known operations with goal that, e.g. boolean
+inlining is part of generic optimization & value propagation.
+
+Known Objects
+ - true, false, nil
+ - literals: numbers, string, char, arrays, byteVectors, `<compile-time-results>`
+
+Known Operations [core subset]
+ - Booleans: #ifTrue: ...
+ - Blocks: #whileTrue: ...
+ - Math: + - * // \\ squared ...
+ - Collections: #to:do: ...
 
 ## Background Reading
 
