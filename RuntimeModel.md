@@ -323,6 +323,11 @@ Javier Piḿas, Javier Burroni, Gerardo Richarte:
 "Design and implementation of Bee Smalltalk Runtime"
 http://esug.org/data/ESUG2014/IWST/Papers/iwst2014_Design%20and%20implementation%20of%20Bee%20Smalltalk%20Runtime.pdf
 
+Olivier Flückiger: 
+"Implementing Pinocchio a VM-less metacircular runtime library for dynamic languages"
+Bachelor’s thesis, University of Bern, December 2011.
+http://scg.unibe.ch/archive/projects/Flue11a.pdf
+
 Robert Hieb, R. Kent Dybvig, Carl Bruggeman:
 "Representing Control in the Presence of First-Class Continuations"
 https://legacy.cs.indiana.edu/~dyb/pubs/stack.pdf
