@@ -7,3 +7,6 @@ Start Small !  ;^)
 
 
 [Nothing here to see yet]
+
+Background readings and musings at
+https://github.com/KenDickey/Small/blob/main/RuntimeModel.md
