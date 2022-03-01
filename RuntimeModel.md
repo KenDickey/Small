@@ -247,6 +247,14 @@ Linear search.
 
 [Duo? Special case of Monomorphic w 1 override? -> use subclass test (above)]
 
+vvv===================vvv
+Note: OpenSmalltalk-VM Observes
+
+Monomorphic	3566	90.4%
+Polymorphic	 307	 7.8%
+Megamorphic	  70	 1.8%
+^^^===================^^^
+
 Registers reserved for method lookup.. 
 - A0=Receiver
 - temp0 for Selector [Temp0 is object Reg]
