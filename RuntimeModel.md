@@ -217,6 +217,12 @@ Saved regs alloc'ed for loop constructs to be "rare" relative to blocks to minim
 Do simple rules for "register tracking" for debug as to what/when on stack and what/when in regs
 and annotate special case details in code.
 
+### Register Allocation
+
+Yin Wang and R. Kent Dybvig:
+"Register Allocation By Model Transformer Semantics"
+https://arxiv.org/pdf/1202.5539.pdf
+
 
 ## Message Invocation
 
@@ -229,11 +235,11 @@ Selector Ideas
 
 Selector is subclass of Symbol, but with additional slots
 -  Hash2 -> room for 2 secondary hashes + a 20 bit constant ID [1 million selectors]
--  PIC - by selector vs by call site?
+-  PIC - by selector vs by call site? [Selector -> too many collisions]
 -  As using "classIDs", can simply change class of Selector instance
 [with same "structural type"]
 ```
-    Symbol
+     Symbol
        |
     Selector
     /  |  \  
@@ -358,11 +364,6 @@ Eliot Miranda, Clément Béra:
  Object-oriented Programming"
 https://hal.inria.fr/hal-01152610/file/partialReadBarrier.pdf
 
-### Register Allocation
-
-Yin Wang and R. Kent Dybvig:
-"Register Allocation By Model Transformer Semantics"
-https://arxiv.org/pdf/1202.5539.pdf
 
 ### Possible future direction of these notes:
 
