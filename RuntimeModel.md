@@ -80,7 +80,7 @@ multiple categories (e.g. Sphere+Ball, Square+Rectangle)
 
 _Vertical Encodings_ are just consecutive numbers and may be used where there are many categories,
 each of which is distinct from all others.
-E.g. (#triangle->4, #rectangle->4, #pentagram->5, #hexagram->6)
+E.g. (#point->1, #line->2, #triangle->3, #rectangle->4, #pentagram->5, #hexagram->6)
 
 Most immediate values (small integers, floats, characters) and object header format
 is well described in Clément Béra: "Spur’s new object format"
