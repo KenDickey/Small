@@ -174,23 +174,23 @@ Stack records are between the chained FramePointer regs, which point to base of 
     ..
     ..    
     ^
-    ^  	MethodContext-Header
+    ^   MethodContext-Header
     ^--<OlderFP <---------------<
-        ReturnAddress		^
-	Receiver		^
-	Method			^
-        [Oarg..]  [oops] 	^
-	[Otemp..] [oops]	^
-	[Btemp..] [bits]	^
-	MethodContext-Header	^
+        ReturnAddress           ^
+        Receiver                ^
+        Method                  ^
+        [Oarg..]  [oops]        ^
+        [Otemp..] [oops]        ^
+        [Btemp..] [bits]        ^
+        MethodContext-Header    ^
 FP--->  PreviousFP >------------^
-	ReturnAddress
-	Receiver
-	Method
+        ReturnAddress
+        Receiver
+        Method
         [Oarg..] 
-	[Otemp..]
-	[Btemp..]
-SP---> 	MethodContext-Header
+        [Otemp..]
+        [Btemp..]
+SP--->         MethodContext-Header
 
 ```
 Note: For GC, a Method knows its number of args, objTemps, binaryTemps.
@@ -255,9 +255,9 @@ Linear search.
 
 
 Note: OpenSmalltalk-VM Observes
-- Monomorphic	3566	90.4%
-- Polymorphic	 307	 7.8%
-- Megamorphic	  70	 1.8%
+- Monomorphic        3566        90.4%
+- Polymorphic         307         7.8%
+- Megamorphic          70         1.8%
 
 
 Registers reserved for method lookup.. 
