@@ -270,11 +270,11 @@ Registers reserved for method lookup..
 ```
 Before
   Receiver [A0]
-  Args [A1..16; spill to Stack]
+  Args [A1..A6; spill to Stack]
   Selector [Temp0]
 After
   Receiver [A0]
-  Args [A1..6;stack]
+  Args [A1..A6;stack]
   Method [S1]
   Env [S2; nil or block captures]
 ```
@@ -284,6 +284,8 @@ After
   Prolog ->  Adjust StackPointer as required
     [Note Tail Calls; Leaf Calls; Block Env Capture]
 ```
+Note: Pinocchio (another meta-circular runtime) 
+https://scg.unibe.ch/archive/projects/Flue11a.pdf
 Note: Keep, Hearn and Dybvig
 "Optimizing Closures in O(0) time"
 http://www.schemeworkshop.org/2012/papers/keep-hearn-dybvig-paper-sfp12.pdf
