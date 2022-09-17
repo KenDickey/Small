@@ -237,7 +237,7 @@ Selector is subclass of Symbol, but with additional slots
 -  Hash2 -> room for 2 secondary hashes + a 20 bit constant ID [1 million selectors]
 -  PIC - by selector vs by call site? [Selector -> too many collisions]
 -  As using "classIDs", can simply change class of Selector instance
-[with same "structural type"]
+[with same "structural type"]  ?Useful, or just wacky?
 ```
      Symbol
        |
@@ -252,7 +252,6 @@ Use "copydown" method strategy for MegaMorphic Methods. [Only check 1 mDict]
 Linear search.
 
 [Duo? Special case of Monomorphic w 1 override? -> use subclass test (above)]
-
 
 Note: OpenSmalltalk-VM Observes
 - Monomorphic        3566        90.4%
