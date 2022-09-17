@@ -1,0 +1,91 @@
+===============================================================
+CUIS  [Classic Hierarchy]
+====
+Object subclass: #Behavior
+	instanceVariableNames: 'superclass methodDict format'
+	classVariableNames: 'ObsoleteSubclasses'
+	poolDictionaries: ''
+	category: 'Kernel-Classes'
+
+Behavior subclass: #ClassDescription
+	instanceVariableNames: 'instanceVariables organization'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Kernel-Classes'
+
+ClassDescription subclass: #Class
+	instanceVariableNames: 'subclasses name classPool sharedPools'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Kernel-Classes'
+
+ClassDescription subclass: #Metaclass
+	instanceVariableNames: 'thisClass'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Kernel-Classes'
+
+===============================================================
+Pinocchio/P4  [Class is a Behavior]
+============
+Object subclass: #Behavior
+	instanceVariableNames: 'instanceHeader behavior layout'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Kernel-Behavior'
+
+Behavior subclass: #Class
+	instanceVariableNames: 'name package'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Kernel-Behavior'
+
+Behavior subclass: #Metaclass
+	instanceVariableNames: 'instance'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Kernel-Behavior'
+
+Object subclass: #SmalltalkBehavior
+	instanceVariableNames: 'methodDictionary class superbehavior'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Kernel-Behavior'
+
+===============================================================
+Bee [Class and Behavior are disjount; Class is a Species]
+===
+Object subclass: #Behavior
+	instanceVariableNames: 'class methods next'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Kernel'
+
+Object subclass: #Species
+	instanceVariableNames: 
+  'superclass instanceBehavior format organization instanceVariables'
+	classVariableNames: 'Flags'
+	poolDictionaries: ''
+	category: 'Kernel'
+
+Species subclass: #Class,
+	instanceVariableNames: 
+  'name subclasse namespaces module'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Kernel'
+
+Species subclass: #Metaclass
+	instanceVariableNames: 'class'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Kernel'
+
+Object subclass: #ClassOrganizer
+	instanceVariableNames: 
+  'comment categories selectors author timestamp prev'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Kernel
+
+===============================================================
