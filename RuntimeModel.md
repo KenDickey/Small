@@ -248,8 +248,8 @@ Mono Poly Mega
 ```
 Use "copydown" method strategy for MegaMorphic Methods. [Only check 1 mDict]
 
-? #isA pattern: Just a subclass test.  Use sorted vector of ClassIDs (highest first).
-Linear search.
+? #isA pattern: Just a subclass test.  Use sorted vector of ClassIndexes (highest first).
+Linear search.  Per-class.
 
 [Duo? Special case of Monomorphic w 1 override? -> use subclass test (above)]
 
@@ -291,7 +291,14 @@ http://www.schemeworkshop.org/2012/papers/keep-hearn-dybvig-paper-sfp12.pdf
 
 ## Contexts & Exceptions
 
-## Optimization Ideas
+## Optimization Ideas [try 'em and measure]
+
+Avoid having writable code pages for PIC updates by reserving address literals
+area in a method. Prefill with #invoke.  As method pointer already in a register during
+invocation, just index and jump through.  Monomorphic cache just replaces #invoke
+address with #cached-method address.  [Note Pinocchio call mechanics (below)].
+Polymorphic is extra redirect (#polymorph-specialization address used instead of
+direct jump to method code).  Call always jumps through method.
 
 Make "type tests" visible to be "lifted out" or "propagated forward".
 I.e. in a Method, if the first send does a check for an argument being a SmallInteger,
