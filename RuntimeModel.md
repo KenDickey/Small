@@ -109,7 +109,7 @@ will compensate for the irregulatiry in testing.  We shall see.
 ## Runtime Model
 
 The foregoing gave a brief overview of how objects (data+behavior) are represented in memory.
-Here we describe the basics of the _runtime execution model_, how the Central
+Here we describe the basics of the _GR8 runtime execution model_, how the Central
 Processing Unit or _CPU_ uses the Stack and Registers to process instructions and
 drive computation forward.
 
@@ -120,7 +120,8 @@ the stack frame/thisContext and may hold captured references to values in the
 visible/lexical environment.
 
 There may be multiple "entry points" into the main body of the code, some of which do
-extra checks on the kind of arguments acceptable.  E.g. low-level addition of two small integers
+extra checks on the kind of arguments acceptable.
+E.g. low-level addition of two small integers
 requires a _guard_ to assure that both arguments are indeed small integers.
 DoIt to the text "3 + 4" in a Workspace invokes ```SmallInteger>>+```.
 The #+ method of the SmallInteger object 3 requires one SmallInteger argment.
@@ -143,10 +144,10 @@ http://esug.org/data/ESUG2014/IWST/Papers/iwst2014_Design%20and%20implementation
 Note especially: Allen Wirfs-Brock: "Efficient Implementation of Smalltalk Block Returns"
 http://www.wirfs-brock.com/allen/things/smalltalk-things/efficient-implementation-smalltalk-block-returns
 
-RISC-V Stack grows down and is quadword aligned.
-Stack records are between the chained FramePointer regs, which point to base of stack frame, and the StackPointer itself.
+RISC-V Stack grows down and is quadword aligned. Pointers are 8 bytes in width.
+Stack records are between the chained FramePointer regs,
+which point to base of stack frame, and the StackPointer itself.
 
-@@@
 
 ### Registers
 ````
@@ -165,13 +166,15 @@ A         R2-7       X12-17	Arguments [1..6] (spill to stack}
 T         R9-12      X28-31	Temporaries/Volatile[1..4] (Non-Object Values: Bits)
 C         R22        X22	Class Vector [Class Index = Class Hash]
 G         R23        X23	Smalltalk Globals (Vector of Known Objects)
+Target    ..         X9         Jump Address
+CallIndex            X18        Method[CallIndex] is address to jump too
 StkLimit  R24        X24	(Make these Hart/Core specific?)
 NextAlloc R25        X25	(Make these Hart/Core specific?)
 AllocLimit R26       X26	(Make these Hart/Core specific?)
 Global Ptr ?         X3		OS Specific Globals [useful?]
 Thread Ptr ?         X4         OS SPecific Thread Pointer [useful?]
 OTemp      ?         X5-7	Temporaries/Volatile[1..3] (Object Values: OOPS)
-Unassigned ..        X9,X18,X27  [CalleR Saves (volatile)]
+Unassigned ..        X27        [CalleR Saves (volatile)]
 
 Float Temps          F0-7,F28-31 [CalleR Saves (volatile) ]
 Float Saves          F8-9,F18-27 [CalleE Saves]
@@ -208,7 +211,8 @@ SP--->  MethodContext-Header
 ```
 Note: For GC, a Method knows its number of args, objTemps, binaryTemps.
 
-Note: to interpret/convert frames into Context objects requires tracking spills and registers.
+Note: To interpret/convert frames into Context objects
+requires tracking spills and registers.
 If each method knows its frame size, then just push a MethodContext Header and set its size
 and info fields.
 Zero out stack slots at frame alloc.
@@ -239,37 +243,73 @@ https://arxiv.org/pdf/1202.5539.pdf
 
 ## Message Invocation
 
-After Bee, we separate lookup from invocation.
+After Bee and Pinocchio, we separate lookup from invocation.
+Or #invoke = #lookup then #perform.
 
 Lookup takes an object, the receiver, and a selector and finds either
 the requisite method or substitutes a DNU.
+````Smalltalk
+invoke: selector
+  <invoke>
+  |method behavior|
+  behavior := self behavior.
+  method := behavior lookup: selector for: self
+  "Cache this, see below"
+  ↑ method performUnchecked: selector on: self.
 
-Selector Ideas
+lookup: selector
+  |class dictionary|
+  class := self class.
+  [ class == nil ] whileFalse: [
+      dictionary := class methodDictionary.
+      (dictionary at: selector)
+          ifNotNil: [ :method | ↑ method ].
+      class := class superclass
+   ].
+   ↑ self doesNotUnderstand.
+````
 
-Selector is subclass of Symbol, but with additional slots
--  Hash2 -> room for 2 secondary hashes + a 20 bit constant ID [1 million selectors]
--  PIC - by selector vs by call site? [Selector -> too many collisions]
--  As using "classIDs", can simply change class of Selector instance
-[with same "structural type"]  ?Useful, or just wacky?
-```
-     Symbol
-       |
-    Selector
-    /  |  \  
-   /   |   \  
-Mono Poly Mega
-```
-Use "copydown" method strategy for MegaMorphic Methods. [Only check 1 mDict]
+So method call at the register level is
+````
+R0 <- Receiver
+S  <- Selector
+A0... <- Spread Arguments or Argvector
+Target <- Method[CallSiteIndex]
+GoTo/Jump (Target)
+````
+Where Method[call-sites..] slots are initialized to #invoke.
 
-? #isA pattern: Just a subclass test.  Use sorted vector of ClassIndexes (highest first).
-Linear search.  Per-class.
+This is a Monomorphic cache.  On first invoke, the #invoke method knows that
+Method[CallIndex] is the location in memory to place the address of the
+found method.  The second invoke goes directly to this method.
 
-[Duo? Special case of Monomorphic w 1 override? -> use subclass test (above)]
+The #performUnchecked:on: skips the class check at the start of a method, but
+subsequent calls always execute the call check method prefix.  If class
+is not correct, just do a simplified invoke which does not do caching.
 
+The rationale of jumping to a call site address which is an indexed
+slot in a Method object is to separate possibly read-only executable
+code from where we expect to write.  Method code is allocated/linked
+as a sharable code page (read+execute) as a word-vector.  The method
+itself is an object with both named and indexed variables.
+           Header
+Method --> Named Slots.. (code,selector,class)
+           Indexed Slots.. (cached method addresses)
+
+Polymorphic call sites are fewer, but possible to allocate caches and jump
+to them using the same mechanics.
+````
 Note: OpenSmalltalk-VM Observes
 - Monomorphic        3566        90.4%
 - Polymorphic         307         7.8%
 - Megamorphic          70         1.8%
+````
+
+## Stray Thoughts
+
+? #isA pattern: Just a subclass test.  Use sorted vector of ClassIndexes (highest first).
+Linear search.  Per-class.
+
 
 
 Registers reserved for method lookup.. 
