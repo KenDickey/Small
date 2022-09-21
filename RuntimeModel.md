@@ -149,24 +149,37 @@ Stack records are between the chained FramePointer regs, which point to base of 
 @@@
 
 ### Registers
+````
+(Bee)    Aarch64     RISCV	Notes
+-----    -------     -----	=====
+ZERO      ?          X0         Always Zero (read); Writes are NoOps
+IP/PC     -           -		Program Counter [access by instruction]
+RA        ?          X1		Return Address
+SP        SP*        X2		Stack Pointer
+FP        R29        X8		Frame Pointer
+R         R0/R1      X10/X11	Receiver=Self[R0] / Return Value[R1]
+M         R19        X19	Method Address
+S         R20        X20	Selector
+E         R21        X21	Environment [Closure Captures (chained)]
+A         R2-7       X12-17	Arguments [1..6] (spill to stack}
+T         R9-12      X28-31	Temporaries/Volatile[1..4] (Non-Object Values: Bits)
+C         R22        X22	Class Vector [Class Index = Class Hash]
+G         R23        X23	Smalltalk Globals (Vector of Known Objects)
+StkLimit  R24        X24	(Make these Hart/Core specific?)
+NextAlloc R25        X25	(Make these Hart/Core specific?)
+AllocLimit R26       X26	(Make these Hart/Core specific?)
+Global Ptr ?         X3		OS Specific Globals [useful?]
+Thread Ptr ?         X4         OS SPecific Thread Pointer [useful?]
+OTemp      ?         X5-7	Temporaries/Volatile[1..3] (Object Values: OOPS)
+Unassigned ..        X9,X18,X27  [CalleR Saves (volatile)]
 
-- FramePointer is register S0 (x8).
-- StackPointer is register SP (x2).
-- Self/Receiver is register A0 [Also Result]
-- Arguments in registers A1..A7 with spill to Stack
-- Method in S1 [For literal access; 1st literal is CodeVector]
-- Env in S2 [for closure captured variable access; may be nil]
-- PC [Points into Method's Codevector]
-- Temp0 .. Temp6 in T0..T6 w spill to Stack
-- ReturnAddress in RA (x1)
-- Nil/UndefinedObject is ZERO (x0) [see below]
-- KnownObjects base
-- Behavior/Class table base page
-- MethodContext Header Template
-- StackLimit
-- NextAlloc
-- AllocLimit
-[IntReg Backup/Home in Float Regs (faster than RAM)]
+Float Temps          F0-7,F28-31 [CalleR Saves (volatile) ]
+Float Saves          F8-9,F18-27 [CalleE Saves]
+Float Arg/Result     F10-11      [CalleR (volatile)]
+Float Args           F12-17      [CalleR (volatile)]
+
+````
+[?IntReg Backup/Home in Float Regs (faster than RAM)?]
 
 ### Stack Layout
 ```
@@ -190,7 +203,7 @@ FP--->  PreviousFP >------------^
         [Oarg..] 
         [Otemp..]
         [Btemp..]
-SP--->         MethodContext-Header
+SP--->  MethodContext-Header
 
 ```
 Note: For GC, a Method knows its number of args, objTemps, binaryTemps.
