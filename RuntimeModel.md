@@ -305,53 +305,36 @@ Note: OpenSmalltalk-VM Observes
 - Megamorphic          70         1.8%
 ````
 
-## Stray Thoughts
-
-? #isA pattern: Just a subclass test.  Use sorted vector of ClassIndexes (highest first).
-Linear search.  Per-class.
-
-
-
-Registers reserved for method lookup.. 
-- A0=Receiver
-- temp0 for Selector [Temp0 is object Reg]
-- temp1 & temp2 for binary (non-object) usage? [select ranges]
-- other temps for hash & dict lookup? [TBD]
-
-### Method Lookup:
-```
-Before
-  Receiver [A0]
-  Args [A1..A6; spill to Stack]
-  Selector [Temp0]
-After
-  Receiver [A0]
-  Args [A1..A6;stack]
-  Method [S1]
-  Env [S2; nil or block captures]
-```
-### Method Invocation:
-```
-  Arg Checks -> redispatch if required
-  Prolog ->  Adjust StackPointer as required
-    [Note Tail Calls; Leaf Calls; Block Env Capture]
-```
 Note: Pinocchio (another meta-circular runtime) 
 https://scg.unibe.ch/archive/projects/Flue11a.pdf
 Note: Keep, Hearn and Dybvig
 "Optimizing Closures in O(0) time"
 http://www.schemeworkshop.org/2012/papers/keep-hearn-dybvig-paper-sfp12.pdf
 
+
 ## Contexts & Exceptions
+
+## Cool things from Pinocchio
+
+- Break infinite regress by having a Formal late binding, but use
+method "type hints" to early bind immutable monomorphic call sites.
+- Write out ELF files to leverage gnu utils (ld, readelf, ..) and gdb.
+- Runtime spec is just prefixed classes (e.g. 'P4') which use introspection
+to get method source. => Already lexed&compiled in host system, so no
+syntax errors. (assuming valid host Smalltalk).  Easy to package.
+
+## Cool things from Bee
+
+- Complete metacircular core Smalltalk, including GC [Pinocchio is partial].
+- UnderPrims (a.k.a. "millicode")
+- Methods store encoded ASTs which can be nativised to local CPU when loaded.
+- Separate VM spec. (good and bad;
+relies on Tonel format; more likely to have syntax errors)
 
 ## Optimization Ideas [try 'em and measure]
 
-Avoid having writable code pages for PIC updates by reserving address literals
-area in a method. Prefill with #invoke.  As method pointer already in a register during
-invocation, just index and jump through.  Monomorphic cache just replaces #invoke
-address with #cached-method address.  [Note Pinocchio call mechanics (below)].
-Polymorphic is extra redirect (#polymorph-specialization address used instead of
-direct jump to method code).  Call always jumps through method.
+? #isA pattern: Just a subclass test.  Use sorted vector of ClassIndexes (highest first).
+Linear search.  Per-class.
 
 Make "type tests" visible to be "lifted out" or "propagated forward".
 I.e. in a Method, if the first send does a check for an argument being a SmallInteger,
@@ -381,7 +364,7 @@ Known Objects
  - true, false, nil
  - literals: numbers, string, char, arrays, byteVectors, `<compile-time-results>`
 
-Known Operations [core subset]
+Known Operations [core subset -- early bound w late bound fallback]
  - Booleans: #ifTrue: ...
  - Blocks: #whileTrue: ...
  - Math: + - * // \\ squared ...
