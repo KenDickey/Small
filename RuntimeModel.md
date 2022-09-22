@@ -326,8 +326,11 @@ Note: OpenSmalltalk-VM Observes
 An alternative to Polymorphic caches is to do a "copy down" of _only_
 un-overwridden polymorphic methods to subclass dictionaries.  This would
 limit polymorphic lookup to one dictionary access.  If not in
-the first probe, we can safely return a DNU.  This requres check & fixup
-when overrides but small cost at method compile.
+the first probe, we can safely return a DNU (after copydown).
+This requres check & fixup
+when override added but is small cost at method compile time.
+This can be done lazily by method prolog's class check
+if the method selector is found in a superclass dictionary.  
 
 ## Contexts & Exceptions
 
