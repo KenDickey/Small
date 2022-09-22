@@ -326,7 +326,8 @@ Note: OpenSmalltalk-VM Observes
 An alternative to Polymorphic caches is to do a "copy down" of _only_
 un-overwridden polymorphic methods to subclass dictionaries.  This would
 limit polymorphic lookup to one dictionary access.  If not in
-the first probe, we can safely return a DNU.
+the first probe, we can safely return a DNU.  This requres check & fixup
+when overrides but small cost at method compile.
 
 ## Contexts & Exceptions
 
@@ -358,26 +359,22 @@ if the test passed, then no other sends need to re-check for this object again.
 All succeeding SmallInteger tests can be elided (the tested object's "type" 
 has become resolved).
 
-Selectors with 3 hash values -> Method lookup for specific table can use best
-case hash to reduce collisions.
-
-Table class specialization on h1/h2/h3 like that for Selector specialization.
-
-Method specialization for tail/leaf/capture/.. like that for Selectors.
-
 Small Objects who's lifetimes don't extend beyond the lifetime of
 a method invocation could be stack-allocated.
 
-Within the context of a Class, trivial slot accessors could be open-coded.
+Within the context of a Class, trivial slot accessors could be open-coded.  On
+the other hand, first class Slot definition objects are interesting.
 
-With argument literals, one could preform subclass tests at compile time; other constant propagarion.
+With argument literals, one could preform subclass tests at compile time;
+other constant propagarion.
 This requires recompilation when overrides.
 
-Inlining: Use #Pragmas to annotate known objects and known operations with goal that, e.g. boolean
+Inlining: Use #Pragmas/<annotations> to annotate known objects and known
+operations with goal that, e.g. boolean
 inlining is part of generic optimization & value propagation.
 
 Known Objects
- - true, false, nil
+ - true, false, nil [literal 16/8/0 in code]
  - literals: numbers, string, char, arrays, byteVectors, `<compile-time-results>`
 
 Known Operations [core subset -- early bound w late bound fallback]
@@ -387,7 +384,6 @@ Known Operations [core subset -- early bound w late bound fallback]
  - Collections: #to:do: ...
 
 ## Background Reading
-
 
 ### MetaCircular Smalltalk Runtimes
 
@@ -404,6 +400,8 @@ http://scg.unibe.ch/archive/projects/Flue11a.pdf
 
 Allen Wirfs-Brock: "Efficient Implementation of Smalltalk Block Returns"
 http://www.wirfs-brock.com/allen/things/smalltalk-things/efficient-implementation-smalltalk-block-returns
+
+Note: Bee Implementation ref with example, above.
 
 Robert Hieb, R. Kent Dybvig, Carl Bruggeman:
 "Representing Control in the Presence of First-Class Continuations"
