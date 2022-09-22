@@ -88,6 +88,17 @@ is well described in Clément Béra: "Spur’s new object format"
 https://clementbera.wordpress.com/2014/01/16/spurs-new-object-format/
 (Other refs below).
 
+One counter-intuitive win here is the
+use of ClassIndex rather than a pointer to a class.
+This loses because one has to index into a table
+to get an object's Behavior, an extra indirection.
+But the win is that one makes for cheap class checks
+at each method's inline cache callsite
+and these sites do not have to be scanned by GC.
+Also, the majority of basic classes are together so the
+indexing tends to keep the first section of the class table
+in cache, reducing the cost.
+
 Most values are known by the tag in their lower 3 bits.
 - 2r000 -> Object Oriented Pointer, or _OOP_.
 - 2r001 -> Small (limited range) Integer
