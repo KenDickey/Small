@@ -310,8 +310,8 @@ itself is an object with both named and indexed variables.
 Method --> Named Slots.. (code,selector,class)
            Indexed Slots.. (cached method addresses)
 
-Method code is pinned and does not need to be scanned by GC.  The indexed
-slot method address cache part or a Method object do not need to
+Method code is pinned and does not need to be scanned by GC.  The _indexed
+slot method address cache_ part of a Method object does not need to
 be scanned.
 
 Polymorphic call sites are fewer, but possible to allocate caches and jump
