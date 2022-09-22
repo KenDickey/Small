@@ -308,7 +308,7 @@ as a sharable code page (read+execute) as a word-vector.  The method
 itself is an object with both named and indexed variables.
 ````
            Header
-Method --> Named Slots.. (code,selector)
+Method --> Named Slots.. (code,homeClassIndex,selector)
            Indexed Slots.. (cached method addresses)
 ````
 Method code is pinned and does not need to be scanned by GC.  The _indexed
@@ -433,6 +433,12 @@ Eliot Miranda, Clément Béra:
  Object-oriented Programming"
 https://hal.inria.fr/hal-01152610/file/partialReadBarrier.pdf
 
+### First Class Layouts & Slots
+
+Verwaest, Lingu, Nierstrasz, Bruni:
+"Flexible Object Layouts:
+enabling lightweight language extensions by intercepting slot access"
+https://hal.inria.fr/hal-00641716
 
 ### Possible future direction of these notes:
 
