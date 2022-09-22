@@ -286,7 +286,7 @@ This is a Monomorphic cache.  On first invoke, the #invoke method knows that
 Method[CallIndex] is the location in memory to place the address of the
 found method.  The second invoke goes directly to this method.
 
-The ````Smalltalk #performUnchecked:on:```` skips the class check at the start of a method, but
+The ````#performUnchecked:on:```` skips the class check at the start of a method, but
 subsequent calls always execute the call check method prefix.  If class
 is not correct, just do a simplified invoke which does not do caching.
 
