@@ -31,7 +31,8 @@ There exists a vector/array of objects known as the Known Objects Array.
 One known object is the SystemDictionary named #Smalltalk.
 
 Basically, all globals known to code are either local values
-(Instance Variables or Method Temporaries) or are names in the Smalltalk Dictionary.
+(Instance Variables or Method Temporaries) or are
+names in the Smalltalk Dictionary.
 
 There is a segmented table of ClassID -> Behavior, where a Behavior is a
 dictionary of (Method Selector Symbol -> Method).
@@ -221,7 +222,8 @@ and perform reg->stack spills before dereferencing MethodContexts.
 Get newest thisContext from current FramePointerReg and backchain FramePointers to traverse
 (e.g. for GC).
 
-CPU Regs are known as (partition) "bits" or "OOPS" and only the OOPS get scanned by GC.
+CPU Regs are known as (partition) "bits" or "OOPS" and
+only the OOPS get scanned by GC.
 Methods know this.
 
 To avoid "deep spill problem" (lazy caller-save register spill, deeply nested return must restore)
@@ -231,7 +233,8 @@ the invariant is that such regs must be "eagerly" spilled before block escapes, 
 Saved regs alloc'ed for loop constructs to be "rare" relative to blocks to minimize spills.
 [Investigate ping/pong/coroutine register cooperation patterns].
 
-Do simple rules for "register tracking" for debug as to what/when on stack and what/when in regs
+Do simple rules for "register tracking" for debug
+as to what/when on stack and what/when in regs
 and annotate special case details in code.
 
 ### Register Allocation
@@ -241,7 +244,7 @@ Yin Wang and R. Kent Dybvig:
 https://arxiv.org/pdf/1202.5539.pdf
 
 
-## Message Invocation
+## Message Invocation & CallSite Caching
 
 After Bee and Pinocchio, we separate lookup from invocation.
 Or #invoke = #lookup then #perform.
@@ -296,6 +299,10 @@ itself is an object with both named and indexed variables.
 Method --> Named Slots.. (code,selector,class)
            Indexed Slots.. (cached method addresses)
 
+Method code is pinned and does not need to be scanned by GC.  The indexed
+slot method address cache part or a Method object do not need to
+be scanned.
+
 Polymorphic call sites are fewer, but possible to allocate caches and jump
 to them using the same mechanics.
 ````
@@ -304,13 +311,10 @@ Note: OpenSmalltalk-VM Observes
 - Polymorphic         307         7.8%
 - Megamorphic          70         1.8%
 ````
-
-Note: Pinocchio (another meta-circular runtime) 
-https://scg.unibe.ch/archive/projects/Flue11a.pdf
-Note: Keep, Hearn and Dybvig
-"Optimizing Closures in O(0) time"
-http://www.schemeworkshop.org/2012/papers/keep-hearn-dybvig-paper-sfp12.pdf
-
+An alternative to Polymorphic caches is to do a "copy down" of _only_
+un-overwridden polymorphic methods to subclass dictionaries.  This would
+limit polymorphic lookup to one dictionary access.  If not in
+the first probe, we can safely return a DNU.
 
 ## Contexts & Exceptions
 
@@ -372,9 +376,8 @@ Known Operations [core subset -- early bound w late bound fallback]
 
 ## Background Reading
 
-### thisContext, Exception handling, and Stack Management
-Allen Wirfs-Brock: "Efficient Implementation of Smalltalk Block Returns"
-http://www.wirfs-brock.com/allen/things/smalltalk-things/efficient-implementation-smalltalk-block-returns
+
+### MetaCircular Smalltalk Runtimes
 
 Javier Piḿas, Javier Burroni, Gerardo Richarte:
 "Design and implementation of Bee Smalltalk Runtime"
@@ -385,6 +388,11 @@ Olivier Flückiger:
 Bachelor’s thesis, University of Bern, December 2011.
 http://scg.unibe.ch/archive/projects/Flue11a.pdf
 
+### thisContext, Exception handling, and Stack Management
+
+Allen Wirfs-Brock: "Efficient Implementation of Smalltalk Block Returns"
+http://www.wirfs-brock.com/allen/things/smalltalk-things/efficient-implementation-smalltalk-block-returns
+
 Robert Hieb, R. Kent Dybvig, Carl Bruggeman:
 "Representing Control in the Presence of First-Class Continuations"
 https://legacy.cs.indiana.edu/~dyb/pubs/stack.pdf
@@ -394,6 +402,10 @@ http://www.mirandabanda.org/cogblog/2009/01/14/under-cover-contexts-and-the-big-
 
 Eliot Miranda: "Context Management in VisualWorks 5i"
 http://www.esug.org/data/Articles/misc/oopsla99-contexts.pdf
+
+Note: Keep, Hearn and Dybvig
+"Optimizing Closures in O(0) time"
+http://www.schemeworkshop.org/2012/papers/keep-hearn-dybvig-paper-sfp12.pdf
 
 ### Spur Object Format
 
