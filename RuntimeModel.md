@@ -306,10 +306,11 @@ slot in a Method object is to separate possibly read-only executable
 code from where we expect to write.  Method code is allocated/linked
 as a sharable code page (read+execute) as a word-vector.  The method
 itself is an object with both named and indexed variables.
+````
            Header
-Method --> Named Slots.. (code,selector,class)
+Method --> Named Slots.. (code,selector)
            Indexed Slots.. (cached method addresses)
-
+````
 Method code is pinned and does not need to be scanned by GC.  The _indexed
 slot method address cache_ part of a Method object does not need to
 be scanned.
