@@ -102,8 +102,9 @@ in cache, reducing the cost.
 Most values are known by the tag in their lower 3 bits.
 - 2r000 -> Object Oriented Pointer, or _OOP_.
 - 2r001 -> Small (limited range) Integer
-- 2r010 -> Character
-- 2r100 -> Small Floating Point Number, or _float_.
+- 2r010 -> Small Floating Point Number, or _float_.
+- 2r110 -> Also an immediate Float (Upper bit extends exponent)
+- 2r100 -> Character
 
 Three immediate values are special: _true_, _false_, and _nil_.
 The trick here is that we don't use OOP addresses near zero.  
@@ -117,6 +118,20 @@ are easy to create and check in code.
 Most values are initialized to _nil_, so writing zeros makes initialization easy.
 It is assumed (need to test this) that the ease of initialization and use
 will compensate for the irregulatiry in testing.  We shall see.
+
+Given Spur's class index, the start of the Class Behavior table should contain
+````
+-  1 -> SmallInteger	[masked tag bits]
+-  2 -> Float	  	[masked tag bits]
+-  3 -> Float	 	[masked tag bits]
+-  4 -> Character    	[masked tag bits]
+-  ...
+-  8 -> True		[Immediate Value]
+- ...
+- 16 -> False		[Immediate Value]
+````
+Other indexes are same as class index = hash value.
+
 
 ## Runtime Model
 
@@ -160,6 +175,8 @@ RISC-V Stack grows down and is quadword aligned. Pointers are 8 bytes in width.
 Stack records are between the chained FramePointer regs,
 which point to base of stack frame, and the StackPointer itself.
 
+Stack Frames should be Context objects (with specialized object headers to denote
+RawBits vs OOPS fields).
 
 ### Registers
 ````
@@ -175,7 +192,7 @@ M         R19        X19	Method Address
 S         R20        X20	Selector
 E         R21        X21	Environment [Closure Captures (chained)]
 A         R2-7       X12-17	Arguments [1..6] (spill to stack}
-T         R9-12      X28-31	Temporaries/Volatile[1..4] (Non-Object Values: Bits)
+T         R9-12      X28-31	Temporaries/Volatile[1..4] (Non-Object Values: RawBits)
 C         R22        X22	Class Vector [Class Index = Class Hash]
 G         R23        X23	Smalltalk Globals (Vector of Known Objects)
 Target    ..         X9         Jump Address
@@ -248,6 +265,27 @@ Do simple rules for "register tracking" for debug
 as to what/when on stack and what/when in regs
 and annotate special case details in code.
 
+Basically we want "objects all the way down"
+````
+	Unit64  [8 bytes in reg or mem]
+         /   \
+   RawBits CookedBits (OOPS)
+            /       \
+     Immediates    Indirects
+     /   |    \      /    \ 
+   Int Float Char Context DataObject
+                          /  | ... \
+                    Object Array .. String
+````
+First class Slots and Object Layout description objects.
+
+CPU as object where register and memory access is via specialized Slot semantics.
+CPU leaf methods inlined [Millicode/Primops/UnderPrims].  CPU regs are either OOPS or
+RawBits.  Likewise for Stack Frame Context objects (GC only scans OOPS).
+
+OS object encapsulates OS Services (System Calls, Devices, I/O; MicroKernel)
+
+
 ### Register Allocation
 
 Yin Wang and R. Kent Dybvig:
@@ -262,6 +300,8 @@ Or #invoke = #lookup then #perform.
 
 Lookup takes an object, the receiver, and a selector and finds either
 the requisite method or substitutes a DNU.
+
+Basically:
 ````Smalltalk
 invoke: selector
   <invoke>
@@ -297,9 +337,11 @@ This is a Monomorphic cache.  On first invoke, the #invoke method knows that
 Method[CallIndex] is the location in memory to place the address of the
 found method.  The second invoke goes directly to this method.
 
-The ````#performUnchecked:on:```` skips the class check at the start of a method, but
+The ````#performUnchecked:on:```` skips the class check at the start
+of a just found method, but
 subsequent calls always execute the call check method prefix.  If class
-is not correct, just do a simplified invoke which does not do caching.
+is not correct, the backup/recovery invoke does not do caching, but
+may "copy-down" polymorphic methods to current (sub)behavior method dictionary.
 
 The rationale of jumping to a call site address which is an indexed
 slot in a Method object is to separate possibly read-only executable
@@ -313,7 +355,7 @@ Method --> Named Slots.. (code,homeClassIndex,selector)
 ````
 Method code is pinned and does not need to be scanned by GC.  The _indexed
 slot method address cache_ part of a Method object does not need to
-be scanned.
+be scanned.  [Base Language runtime for embedding does not have compiler].
 
 Polymorphic call sites are fewer, but possible to allocate caches and jump
 to them using the same mechanics.
@@ -324,15 +366,14 @@ Note: OpenSmalltalk-VM Observes
 - Megamorphic          70         1.8%
 ````
 An alternative to Polymorphic caches is to do a "copy down" of _only_
-un-overwridden polymorphic methods to subclass dictionaries.  This would
+un-overwridden polymorphic methods to subclass dictionaries.  This will
 limit polymorphic lookup to one dictionary access.  If not in
 the first probe, we can safely return a DNU (after copydown).
-This requres check & fixup
+This requres check & fixup by IDE 
 when override added but is small cost at method compile time.
 This can be done lazily by method prolog's class check
 if the method selector is found in a superclass dictionary.  
 
-## Contexts & Exceptions
 
 ## Cool things from Pinocchio
 
