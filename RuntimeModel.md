@@ -280,8 +280,9 @@ Basically we want "objects all the way down"
 First class Slots and Object Layout description objects.
 
 CPU as object where register and memory access is via specialized Slot semantics.
-CPU leaf methods inlined [Millicode/Primops/UnderPrims].  CPU regs are either OOPS or
-RawBits.  Likewise for Stack Frame Context objects (GC only scans OOPS).
+CPU leaf methods inlined [Millicode/Primops/UnderPrims].
+CPU regs are either OOPS or RawBits.
+Likewise for fields of Stack Frame Context objects (GC only scans OOPS).
 
 OS object encapsulates OS Services (System Calls, Devices, I/O; MicroKernel)
 
@@ -296,7 +297,7 @@ https://arxiv.org/pdf/1202.5539.pdf
 ## Message Invocation & CallSite Caching
 
 After Bee and Pinocchio, we separate lookup from invocation.
-Or #invoke = #lookup then #perform.
+Or ````#invoke```` = ````#lookup```` then ````#perform````.
 
 Lookup takes an object, the receiver, and a selector and finds either
 the requisite method or substitutes a DNU.
@@ -381,7 +382,7 @@ if the method selector is found in a superclass dictionary.
 method "type hints" to early bind immutable monomorphic call sites.
 - Write out ELF files to leverage gnu utils (ld, readelf, ..) and gdb.
 - Runtime spec is just prefixed classes (e.g. 'P4') which use introspection
-to get method source. => Already lexed&compiled in host system, so no
+to get method source. => Already lexed+compiled in host system, so no
 syntax errors. (assuming valid host Smalltalk).  Easy to package.
 
 ## Cool things from Bee
@@ -391,6 +392,7 @@ syntax errors. (assuming valid host Smalltalk).  Easy to package.
 - Methods store encoded ASTs which can be nativised to local CPU when loaded.
 - Separate VM spec. (good and bad;
 relies on Tonel format; more likely to have syntax errors)
+
 
 ## Optimization Ideas [try 'em and measure]
 
