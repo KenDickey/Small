@@ -21,8 +21,21 @@ As all objects know how to present themselves, the "simple to use" language
 has complex underpinnings, e.g. Garbage Collection and access to the runtime
 stack frames via #thisContext.
 
-This document collects ideas for an RISC "asm up" runtime system with adequate performance
-as a simplified "backstop runtime".
+GR8 intends to be a metacircular runtime (Smalltalk runtime written in Smalltalk) which compiles
+directly to machine code.
+
+In order to do this, we will build objects representing the CPU and Operating System.
+The idea is to have _rings of growth_:
+ - Language Base [minimal; embeddable]
+ - Full Language [add bignums and other "nice to have" labguage features]
+ - IDE (GUI, Compiler, tools)
+
+It is important to clearly separate areas of concern as much as possible.  One set of cutpoints
+is a fairly portable core, which takes an OS and CPU and generates a CPU+OS specific
+embeddable runtime which works with OS tools (On Linux: ld, gdb, readelf, clib, other libs).
+
+Some thoughts on how this is expected to come together follow.
+
 
 ## Runtime Globals
 
@@ -62,7 +75,7 @@ or
 _Vector-Like Objects_, an array, the first part of which is a Header,
 which encodes clues to its size and structure) and an optional part which is
 interpreted either as Smalltalk Objects (A compact array of Slots) or
-binary data (e.g. a ByteVector).
+binary data (e.g. a ByteVector or WordVector).
 
 We are using OpenSmalltalkVM's "Spur" header format
 (refs below; see "Spur Object Format").
@@ -101,17 +114,18 @@ in cache, reducing the cost.
 
 Most values are known by the tag in their lower 3 bits.
 - 2r000 -> Object Oriented Pointer, or _OOP_.
-- 2r001 -> Small (limited range) Integer
-- 2r010 -> Small Floating Point Number, or _float_.
+- 2r001 -> Small/immediate (limited range) Integer
+- 2r010 -> Small/immediate Floating Point Number, or _float_.
 - 2r110 -> Also an immediate Float (Upper bit extends exponent)
 - 2r100 -> Character
 
 Three immediate values are special: _true_, _false_, and _nil_.
 The trick here is that we don't use OOP addresses near zero.  
 So _nil_, _true_, and _false_ are known by their small values, which
-are easy to create and check in code.
+are easy to create and check in code.  These objects are "fake pointers"
+or "fake OOPS".
 
-- UndefinedObject/Nil = 0  [So matches register ZERO = x0]
+- UndefinedObject/Nil = 0  [So matches riscv64 register ZERO = x0]
 - False = 8 = 2r01000
 - True = 16 = 2r10000
 
@@ -130,7 +144,7 @@ Given Spur's class index, the start of the Class Behavior table should contain
 - ...
 - 16 -> False		[Immediate Value]
 ````
-Other indexes are same as class index = hash value.
+Other indexes are registered as classes are defined. [Spur note: class index = hash value].
 
 
 ## Runtime Model
@@ -162,6 +176,12 @@ is required.
 "Compelling, detailed example here, w regs + stack usage."
 " Perhaps allocate and initialize an object "
 
+Methods should hold debugging information.  One idea from Bee Smalltalk is to keep
+the Methods bytecoded AST (Abstract Syntax Tree) as a compact, pretty-printable form
+of source which can be directly related to the machine code.  [?Use DWARF?]  In any case,
+we need to keep enough information to be able to track value location (register/stack/memory)
+and lifetimes.
+
 
 ## Registers & Stack
 
@@ -178,7 +198,7 @@ which point to base of stack frame, and the StackPointer itself.
 Stack Frames should be Context objects (with specialized object headers to denote
 RawBits vs OOPS fields).
 
-### Registers
+### Possible Register Usage
 ````
 (Bee)    Aarch64     RISCV	Notes
 -----    -------     -----	=====
@@ -187,7 +207,8 @@ IP/PC     -           -		Program Counter [access by instruction]
 RA        ?          X1		Return Address
 SP        SP*        X2		Stack Pointer
 FP        R29        X8		Frame Pointer
-R         R0/R1      X10/X11	Receiver=Self[R0] / Return Value[R1]
+Self      R0         X10	Receiver=Self
+Answer    R1         X11	at send: ClassIndex; at return: Return Value
 M         R19        X19	Method Address
 S         R20        X20	Selector
 E         R21        X21	Environment [Closure Captures (chained)]
@@ -196,12 +217,12 @@ T         R9-12      X28-31	Temporaries/Volatile[1..4] (Non-Object Values: RawBi
 C         R22        X22	Class Vector [Class Index = Class Hash]
 G         R23        X23	Smalltalk Globals (Vector of Known Objects)
 Target    ..         X9         Jump Address
-CallIndex            X18        Method[CallIndex] is address to jump too
+CallIndex            X18        Method[CallIndex] holds Target address to jump too
 StkLimit  R24        X24	(Make these Hart/Core specific?)
 NextAlloc R25        X25	(Make these Hart/Core specific?)
 AllocLimit R26       X26	(Make these Hart/Core specific?)
-Global Ptr ?         X3		OS Specific Globals [useful?]
-Thread Ptr ?         X4         OS SPecific Thread Pointer [useful?]
+Global Ptr           X3		OS Specific Globals [useful?]
+Thread Ptr           X4         OS SPecific Thread Pointer [useful?]
 OTemp      ?         X5-7	Temporaries/Volatile[1..3] (Object Values: OOPS)
 Unassigned ..        X27        [CalleR Saves (volatile)]
 
@@ -270,12 +291,12 @@ Basically we want "objects all the way down"
 	Unit64  [8 bytes in reg or mem]
          /   \
    RawBits CookedBits (OOPS)
-            /       \
-     Immediates    Indirects
-     /   |    \      /    \ 
-   Int Float Char Context DataObject
-                          /  | ... \
-                    Object Array .. String
+       /          \
+   Immediates     Indirects
+   /   |    \        /    \ 
+ Int Float Char ContextPtr DataObjectPtr
+                               /  | ... \
+                          Object Array .. String
 ````
 First class Slots and Object Layout description objects.
 
