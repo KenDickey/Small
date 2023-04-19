@@ -504,6 +504,12 @@ Verwaest, Lingu, Nierstrasz, Bruni:
 enabling lightweight language extensions by intercepting slot access"
 https://hal.inria.fr/hal-00641716
 
+### Zag-Smalltalk
+
+Dave Mason:
+https://github.com/dvmason/Zag-Smalltalk
+https://sarg.torontomu.ca/dmason/UKSt2022-11-30.pdf
+
 ### Possible future direction of these notes:
 
 _Smalltalk All the Way Down: An Implementers Guide_
