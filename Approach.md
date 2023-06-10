@@ -28,6 +28,12 @@ VM Support Makes Problems:
  - FFI
  - Plugins
 
+## Open Question(s)
+
+Both Pinocchio and Bee made changes to separate Class shape from behavior.
+What changes to Cuis Class Hierarchy might be required to minimize
+differences between Cuis Userland and Vanilla (current) Cuis?
+
 ## See also Scribblings:
 
 UserlandClasses.txt -- Critical Classes to understand
@@ -39,6 +45,7 @@ BeeBootstrapClasses.txt
 
 ## Various Bootstrap Refs
 
+- http://scg.unibe.ch/archive/projects/Flue11a.pdf
 - https://playingwithobjects.wordpress.com/2013/05/06/bootstrap-revival-the-basics/
 - https://github.com/guillep/PharoCandle
 - https://github.com/powerlang/bee-dmr
