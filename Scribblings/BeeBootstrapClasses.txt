@@ -1,0 +1,20 @@
+LMR Bootstrap
+
+From:
+  https://github.com/powerlang/bee-dmr/Core/Modules/Builder.st
+
+{ #category : #accessing }
+Builder >> module: aModule [
+	module := aModule.
+	classes := Set new.
+	classes 
+		addAll: SmallInteger withAllSuperclasses;
+		addAll: Array withAllSuperclasses;
+		addAll: {ByteArray. CompiledMethod. Interval. OrderedCollection. Character. 
+				CharacterArray. String. Symbol.
+				HashedCollection. Dictionary. Set. HashTable. InlinedHashTable.
+				Species. Class. Metaclass. Behavior. Association.
+				True. False. Boolean. Closure. CompiledBlock.
+				Namespace. Module. KernelModule}.
+    module classes do: [:c | self configureClass: c]
+]

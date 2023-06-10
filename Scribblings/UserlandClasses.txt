@@ -1,0 +1,38 @@
+===============
+Critical UserLand Classes
+===============
+
+]Kernel-Processes[
+ InputSensor
+    EventSensor
+ Display
+ Form
+    *
+   ...*
+
+]Graphics-Primitives[
+   BitBlt
+   Bitmap
+   Color
+   GeometryTransformation
+     *
+   ...*
+
+]Graphics-Display Objects[
+  Form
+    DisplayScreen
+  ...*
+
+]Morphic-Kernel[
+   *
+
+]Morphic-Support[
+   Morphic-Canvas
+   BitBltCanvasEngine
+   VectorEngine
+     *
+   ...*
+
+]Morphic-Events[
+   *
+  
