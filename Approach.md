@@ -8,7 +8,7 @@ want something less complex.
 The thought is to do "the simplest thing that will work" in Cuis
 to generate a metacircular Smalltalk native runtime, then add
 OS native support for UI, events, files, sockets .. working toward
-a full Cuis IDE (a.k.a. _Cuis Userland_"
+a full Cuis IDE (a.k.a. _Cuis Userland_)
 
 ## Essentials: What Makes Cuis Cuis?
 
@@ -28,10 +28,19 @@ VM Support Makes Problems:
  - FFI
  - Plugins
 
-## See also files:
+## See also Scribblings:
 
 UserlandClasses.txt -- Critical Classes to understand
 
 PrimCallers.tst  -- methods that call PrimOps
   -- note:  #Parser>>primitivePragmaSelectors.
 
+BeeBootstrapClasses.txt
+
+## Various Bootstrap Refs
+
+- https://playingwithobjects.wordpress.com/2013/05/06/bootstrap-revival-the-basics/
+- https://github.com/guillep/PharoCandle
+- https://github.com/powerlang/bee-dmr
+- http://esug.org/data/ESUG2014/IWST/Papers/iwst2014_Design%20and%20implementation%20of%20Bee%20Smalltalk%20Runtime.pdf
+- http://www.smalltalksystems.com/publications/avmarch.pdf
