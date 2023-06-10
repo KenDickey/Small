@@ -51,3 +51,4 @@ BeeBootstrapClasses.txt
 - https://github.com/powerlang/bee-dmr
 - http://esug.org/data/ESUG2014/IWST/Papers/iwst2014_Design%20and%20implementation%20of%20Bee%20Smalltalk%20Runtime.pdf
 - http://www.smalltalksystems.com/publications/avmarch.pdf
+- https://github.com/KenDickey/Crosstalk/tree/master/SmalltalkKernel
